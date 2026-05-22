@@ -2,7 +2,7 @@ console.log('[DW] index.js loaded - v2.10');
 import { eventSource, event_types, extension_prompt_types } from "../../../../script.js";
 import { getContext } from "../../../st-context.js";
 
-const extensionName = "dreamweaver";
+const extensionName = "dreamweaver-extension";
 const extensionFolderPath = `/scripts/extensions/third-party/${extensionName}/`;
 const LS_KEY = 'dw_v2_data';
 
