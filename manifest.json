@@ -1,0 +1,14 @@
+{
+    "name": "dreamweaver",
+    "display_name": "Dreamweaver",
+    "version": "1.0.0",
+    "description": "Сюжетный пульт",
+    "author": "Dreamer",
+    "entryPoint": "index.js",
+    "js": [
+        "index.js"
+    ],
+    "css": [
+        "style.css"
+    ]
+}

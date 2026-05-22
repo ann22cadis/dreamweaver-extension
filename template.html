@@ -1,0 +1,436 @@
+<div id="dreamweaver-modal">
+    <div class="dw-flex-center">
+        <div class="dw-flex-container">
+            <div class="dw-header">
+                <h3>Dreamweaver</h3>
+                <div class="dw-header-controls">
+                    <div id="dw-char-selector">
+                        <div id="dw-char-btn" title="Выбор персонажа" style="display: none;">
+                            <img id="dw-char-active-avatar" src="" alt="">
+                        </div>
+                        <div id="dw-char-list" style="display: none;"></div>
+                    </div>
+                    <div id="dw-power-toggle" title="Включить/Выключить расширение" class="active"><i class="fa-solid fa-power-off"></i></div>
+                    <div id="dw-info-toggle" title="Показать описания тегов"><i class="fa-solid fa-book-open"></i></div>
+                    <div id="dw-close" title="Закрыть">&#10006;</div>
+                </div>
+            </div>
+
+            <div class="dw-content">
+                
+                <!-- AU — ALTERNATIVE UNIVERSE -->
+                <div class="dw-category cat-au">
+                    <div class="dw-cat-title">
+                        <i class="fa-solid fa-earth-americas"></i>
+                        <h4>AU — ALTERNATIVE UNIVERSE</h4>
+                        <i class="fa-solid fa-chevron-down dw-chevron"></i>
+                    </div>
+                    <div class="dw-cat-content">
+                        <div class="dw-sub-category">
+                            <div class="dw-sub-title"><i class="fa-solid fa-dna"></i><h5>Biological & Metaphysical</h5><i class="fa-solid fa-chevron-down dw-chevron-sub"></i></div>
+                            <div class="dw-sub-content">
+                                <div class="dw-tag dw-au-tag" data-desc="Иерархия Альф, Бет и Омег, узлы, гоны и течки.">Omegaverse</div>
+                                <div class="dw-tag dw-au-tag" data-desc="Родственные души, метки, таймеры и ментальные связи.">Soulmates</div>
+                                <div class="dw-tag dw-au-tag" data-desc="Смертельная болезнь безответной любви (цветы в легких).">Hanahaki</div>
+                                <div class="dw-tag dw-au-tag" data-desc="Люди с чертами животных или способностью к превращению.">Hybrid / Shifter AU</div>
+                                <div class="dw-tag dw-au-tag" data-desc="Встреча героев в новых телах спустя века.">Reincarnation</div>
+                            </div>
+                        </div>
+                        <div class="dw-sub-category">
+                            <div class="dw-sub-title"><i class="fa-solid fa-landmark"></i><h5>Historical & Period Eras</h5><i class="fa-solid fa-chevron-down dw-chevron-sub"></i></div>
+                            <div class="dw-sub-content">
+                                <div class="dw-tag dw-au-tag" data-desc="Античность (Греция, Рим, Египет).">Ancient World</div>
+                                <div class="dw-tag dw-au-tag" data-desc="Эпоха викингов и раннего рыцарства.">Early Middle Ages</div>
+                                <div class="dw-tag dw-au-tag" data-desc="Расцвет замков, крестовых походов и инквизиции.">High Middle Ages</div>
+                                <div class="dw-tag dw-au-tag" data-desc="Эпоха Возрождения, балы, яды и расцвет искусств.">Renaissance</div>
+                                <div class="dw-tag dw-au-tag" data-desc="Золотой век пиратства, порох и морская воля.">Pirate AU</div>
+                                <div class="dw-tag dw-au-tag" data-desc="Любая иная конкретная эпоха с упором на достоверность.">Historical (General)</div>
+                                <div class="dw-tag dw-au-tag" data-desc="Эстетика 50-60-х годов, нуар и шпионские игры.">Mid-Century Modern</div>
+                                <div class="dw-tag dw-au-tag" data-desc="Джаз, сухой закон и гангстерский Чикаго.">Noir / Roaring 20s</div>
+                            </div>
+                        </div>
+                        <div class="dw-sub-category">
+                            <div class="dw-sub-title"><i class="fa-solid fa-city"></i><h5>Social, Career & Modern</h5><i class="fa-solid fa-chevron-down dw-chevron-sub"></i></div>
+                            <div class="dw-sub-content">
+                                <div class="dw-tag dw-au-tag" data-desc="Обычный современный мир.">Modern</div>
+                                <div class="dw-tag dw-au-tag" data-desc="Корпоративная культура, интриги в небоскребах.">Office AU</div>
+                                <div class="dw-tag dw-au-tag" data-desc="Школьные будни, первая любовь и подростковый бунт.">High School</div>
+                                <div class="dw-tag dw-au-tag" data-desc="Студенческая жизнь, сессии и общежития.">University (College)</div>
+                                <div class="dw-tag dw-au-tag" data-desc="Уютные будни бариста и случайных встреч.">Coffee Shop</div>
+                                <div class="dw-tag dw-au-tag" data-desc="Криминальные синдикаты и опасные связи.">Mafia AU</div>
+                                <div class="dw-tag dw-au-tag" data-desc="Армия, дисциплина и военные конфликты.">Military</div>
+                                <div class="dw-tag dw-au-tag" data-desc="Фэнтези-герои в обычных человеческих условиях.">No Powers / Mundane</div>
+                            </div>
+                        </div>
+                        <div class="dw-sub-category">
+                            <div class="dw-sub-title"><i class="fa-solid fa-wand-sparkles"></i><h5>Fantasy & Mythological</h5><i class="fa-solid fa-chevron-down dw-chevron-sub"></i></div>
+                            <div class="dw-sub-content">
+                                <div class="dw-tag dw-au-tag" data-desc="Классический магический мир.">Fantasy (General)</div>
+                                <div class="dw-tag dw-au-tag" data-desc="Магия в условиях современных мегаполисов.">Modern Fantasy</div>
+                                <div class="dw-tag dw-au-tag" data-desc="Мир супергероев и необычных способностей.">Superpowers / Quirk AU</div>
+                                <div class="dw-tag dw-au-tag" data-desc="Королевские дворы, интриги и политические браки.">Royalty</div>
+                                <div class="dw-tag dw-au-tag" data-desc="Попадание в чужой мир (магический или игровой).">Isekai / Portal Fantasy</div>
+                                <div class="dw-tag dw-au-tag" data-desc="Олимп, боги и героические квесты.">Ancient Greek & Roman Myths</div>
+                                <div class="dw-tag dw-au-tag" data-desc="Асгард, Вальхалла и северные предания.">Norse Myths</div>
+                                <div class="dw-tag dw-au-tag" data-desc="Фейри, туманные леса и сделки с Иным миром.">Celtic Folklore</div>
+                                <div class="dw-tag dw-au-tag" data-desc="Ёкаи, ками и синтоистские храмы.">Japanese Mythology</div>
+                                <div class="dw-tag dw-au-tag" data-desc="Культиваторы, небожители и демоны.">Chinese Mythology (Xianxia)</div>
+                                <div class="dw-tag dw-au-tag" data-desc="Лешие, русалки и языческая магия лесов.">Slavic Folklore</div>
+                                <div class="dw-tag dw-au-tag" data-desc="Пирамиды, боги с головами зверей и Дуат.">Egyptian Mythology</div>
+                            </div>
+                        </div>
+                        <div class="dw-sub-category">
+                            <div class="dw-sub-title"><i class="fa-solid fa-rocket"></i><h5>Future & Speculative</h5><i class="fa-solid fa-chevron-down dw-chevron-sub"></i></div>
+                            <div class="dw-sub-content">
+                                <div class="dw-tag dw-au-tag" data-desc="Ближайшее будущее (дроны, ИИ).">Near Future</div>
+                                <div class="dw-tag dw-au-tag" data-desc="Выживание на руинах цивилизации.">Post-Apocalyptic AU</div>
+                                <div class="dw-tag dw-au-tag" data-desc="Роботы, обретающие чувства и человечность.">Android / AI AU</div>
+                            </div>
+                        </div>
+                        <div class="dw-sub-category">
+                            <div class="dw-sub-title"><i class="fa-solid fa-clock"></i><h5>Concept & Time</h5><i class="fa-solid fa-chevron-down dw-chevron-sub"></i></div>
+                            <div class="dw-sub-content">
+                                <div class="dw-tag dw-au-tag" data-desc="Путешествия сквозь века.">Time Travel</div>
+                                <div class="dw-tag dw-au-tag" data-desc="Временные петли («День сурка»).">Time Loop</div>
+                            </div>
+                        </div>
+                        <div class="dw-sub-category">
+                            <div class="dw-sub-title"><i class="fa-solid fa-dragon"></i><h5>Species & Entity Types</h5><i class="fa-solid fa-chevron-down dw-chevron-sub"></i></div>
+                            <div class="dw-sub-content">
+                                <div class="dw-tag dw-au-tag" data-desc="Вампирский лор, жажда крови и бессмертие.">Vampire</div>
+                                <div class="dw-tag dw-au-tag" data-desc="Оборотни, смена облика и стайная иерархия.">Werewolf</div>
+                                <div class="dw-tag dw-au-tag" data-desc="Призраки, духи и мистика запредельного.">Ghost</div>
+                                <div class="dw-tag dw-au-tag" data-desc="Эльфы: магия, природа и изящество.">Elves</div>
+                                <div class="dw-tag dw-au-tag" data-desc="Орки: сила, война и суровость.">Orcs</div>
+                                <div class="dw-tag dw-au-tag" data-desc="Гномы: кузнецы, подземелья и золото.">Dwarves</div>
+                                <div class="dw-tag dw-au-tag" data-desc="Ангелы: святость, крылья и долг.">Angels</div>
+                                <div class="dw-tag dw-au-tag" data-desc="Демоны: искушение, пламя и тьма.">Demons</div>
+                                <div class="dw-tag dw-au-tag" data-desc="Существа, питающиеся сексуальной энергией.">Succubus / Incubus</div>
+                                <div class="dw-tag dw-au-tag" data-desc="Лисы-оборотни с магией иллюзий.">Kitsune</div>
+                                <div class="dw-tag dw-au-tag" data-desc="Русалки и сирены океанских глубин.">Mermaids</div>
+                                <div class="dw-tag dw-au-tag" data-desc="Человекоподобные машины и границы живого.">Androids</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- WORLD — SETTINGS & RULES -->
+                <div class="dw-category cat-world">
+                    <div class="dw-cat-title">
+                        <i class="fa-solid fa-map"></i>
+                        <h4>WORLD — SETTINGS & RULES</h4>
+                        <i class="fa-solid fa-chevron-down dw-chevron"></i>
+                    </div>
+                    <div class="dw-cat-content">
+                        <div class="dw-sub-category">
+                            <div class="dw-sub-title"><i class="fa-solid fa-scale-balanced"></i><h5>Power & Law</h5><i class="fa-solid fa-chevron-down dw-chevron-sub"></i></div>
+                            <div class="dw-sub-content">
+                                <div class="dw-tag dw-world-tag" data-desc="Жесткая диктатура, тотальный контроль и суровые наказания.">Totalitarianism</div>
+                                <div class="dw-tag dw-world-tag" data-desc="Полное отсутствие власти, право сильного и хаос.">Anarchy</div>
+                                <div class="dw-tag dw-world-tag" data-desc="Закон работает только для богатых; подкуп и кумовство.">Corrupt System</div>
+                                <div class="dw-tag dw-world-tag" data-desc="Нарушение приличий ведет к социальному изгнанию.">Strict Etiquette</div>
+                                <div class="dw-tag dw-world-tag" data-desc="Постоянная слежка, патрули на улицах и доносы.">Police State</div>
+                            </div>
+                        </div>
+                        <div class="dw-sub-category">
+                            <div class="dw-sub-title"><i class="fa-solid fa-flask-vial"></i><h5>Magic & Tech</h5><i class="fa-solid fa-chevron-down dw-chevron-sub"></i></div>
+                            <div class="dw-sub-content">
+                                <div class="dw-tag dw-world-tag" data-desc="Магия вне закона; колдунов преследуют и казнят.">Forbidden Magic</div>
+                                <div class="dw-tag dw-world-tag" data-desc="Магия — редкий ресурс, за который ведут войны.">Mana Scarcity</div>
+                                <div class="dw-tag dw-world-tag" data-desc="Технологии доступны лишь элите, остальные в нищете.">High Tech / Low Life</div>
+                                <div class="dw-tag dw-world-tag" data-desc="Технологии считаются проклятием или ересью.">Technophobia</div>
+                                <div class="dw-tag dw-world-tag" data-desc="Магия опасна, любое заклинание может стать катастрофой.">Wild Magic</div>
+                            </div>
+                        </div>
+                        <div class="dw-sub-category">
+                            <div class="dw-sub-title"><i class="fa-solid fa-users-gear"></i><h5>Social Rules</h5><i class="fa-solid fa-chevron-down dw-chevron-sub"></i></div>
+                            <div class="dw-sub-content">
+                                <div class="dw-tag dw-world-tag" data-desc="Жесткое деление на сословия без возможности перехода.">Caste System</div>
+                                <div class="dw-tag dw-world-tag" data-desc="Рабство является законным и общепринятым институтом.">Slavery Allowed</div>
+                                <div class="dw-tag dw-world-tag" data-desc="Полное доминирование одного пола в политике и семье.">Matriarchy / Patriarchy</div>
+                                <div class="dw-tag dw-world-tag" data-desc="Глубокая ненависть и недоверие к чужакам.">Xenophobia</div>
+                                <div class="dw-tag dw-world-tag" data-desc="Любые проявления чувств на людях — табу.">Strict Morality</div>
+                            </div>
+                        </div>
+                        <div class="dw-sub-category">
+                            <div class="dw-sub-title"><i class="fa-solid fa-church"></i><h5>Religion & Beliefs</h5><i class="fa-solid fa-chevron-down dw-chevron-sub"></i></div>
+                            <div class="dw-sub-content">
+                                <div class="dw-tag dw-world-tag" data-desc="Религиозные лидеры — верховная власть; ересь карается.">Theocracy</div>
+                                <div class="dw-tag dw-world-tag" data-desc="Боги покинули мир, оставив людей на произвол судьбы.">Dead Gods</div>
+                                <div class="dw-tag dw-world-tag" data-desc="Влиятельные тайные секты, управляющие миром из тени.">Cult Presence</div>
+                                <div class="dw-tag dw-world-tag" data-desc="Религия требует регулярных кровавых жертв.">Sacrificial Rites</div>
+                                <div class="dw-tag dw-world-tag" data-desc="Религия искоренена; торжество чистого разума.">Atheistic World</div>
+                            </div>
+                        </div>
+                        <div class="dw-sub-category">
+                            <div class="dw-sub-title"><i class="fa-solid fa-ban"></i><h5>Taboos & Restrictions</h5><i class="fa-solid fa-chevron-down dw-chevron-sub"></i></div>
+                            <div class="dw-sub-content">
+                                <div class="dw-tag dw-world-tag" data-desc="Прикосновения между группами строго запрещены.">No Contact Rule</div>
+                                <div class="dw-tag dw-world-tag" data-desc="Доступ к знаниям и книгам закрыт для граждан.">Information Blackout</div>
+                                <div class="dw-tag dw-world-tag" data-desc="Выход на улицу после заката означает смерть или арест.">Night Curfew</div>
+                                <div class="dw-tag dw-world-tag" data-desc="Одержимость чистотой крови и родословной.">Blood Purity</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ЖАНР -->
+                <div class="dw-category cat-genre">
+                    <div class="dw-cat-title">
+                        <i class="fa-solid fa-film"></i>
+                        <h4>Жанр</h4>
+                        <i class="fa-solid fa-chevron-down dw-chevron"></i>
+                    </div>
+                    <div class="dw-cat-content">
+                        <div class="dw-sub-category">
+                            <div class="dw-sub-title"><i class="fa-solid fa-couch"></i><h5>Реализм и Драма</h5><i class="fa-solid fa-chevron-down dw-chevron-sub"></i></div>
+                            <div class="dw-sub-content">
+                                <div class="dw-tag dw-genre-tag" data-desc="Повседневная жизнь и спокойная атмосфера.">Slice of Life</div>
+                                <div class="dw-tag dw-genre-tag" data-desc="Легкий юмор и забавные ситуации.">Comedy</div>
+                                <div class="dw-tag dw-genre-tag" data-desc="Эмоциональные конфликты и моральные дилеммы.">Drama</div>
+                                <div class="dw-tag dw-genre-tag" data-desc="Романтика и эмоциональная близость.">Romance</div>
+                                <div class="dw-tag dw-genre-tag" data-desc="Медленное, мучительное развитие чувств.">Slow Burn</div>
+                                <div class="dw-tag dw-genre-tag" data-desc="Идеализированная, мягкая романтика.">Shoujo</div>
+                            </div>
+                        </div>
+                        <div class="dw-sub-category">
+                            <div class="dw-sub-title"><i class="fa-solid fa-bolt"></i><h5>Интриги и Экшен</h5><i class="fa-solid fa-chevron-down dw-chevron-sub"></i></div>
+                            <div class="dw-sub-content">
+                                <div class="dw-tag dw-genre-tag" data-desc="Загадки, расследования и плот-твисты.">Mystery</div>
+                                <div class="dw-tag dw-genre-tag" data-desc="Чувство страха и психологическое давление.">Horror</div>
+                                <div class="dw-tag dw-genre-tag" data-desc="Выживание в суровых и опасных условиях.">Survival</div>
+                                <div class="dw-tag dw-genre-tag" data-desc="Криминал, банды и незаконные сделки.">Crime</div>
+                                <div class="dw-tag dw-genre-tag" data-desc="Исследование мира и динамичные события.">Adventure</div>
+                            </div>
+                        </div>
+                        <div class="dw-sub-category">
+                            <div class="dw-sub-title"><i class="fa-solid fa-venus-mars"></i><h5>Эротика</h5><i class="fa-solid fa-chevron-down dw-chevron-sub"></i></div>
+                            <div class="dw-sub-content">
+                                <div class="dw-tag dw-genre-tag" data-desc="Акцент на эстетике тел и чувственности.">Erotica</div>
+                                <div class="dw-tag dw-genre-tag" data-desc="Графичный сексуальный контент 18+.">Hentai</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ПОВЕДЕНИЕ -->
+                <div class="dw-category cat-behavior">
+                    <div class="dw-cat-title">
+                        <i class="fa-solid fa-user-gear"></i>
+                        <h4>Поведение</h4>
+                        <i class="fa-solid fa-chevron-down dw-chevron"></i>
+                    </div>
+                    <div class="dw-cat-content">
+                        <div class="dw-sub-category">
+                            <div class="dw-sub-title"><i class="fa-solid fa-sun"></i><h5>Светлые черты</h5><i class="fa-solid fa-chevron-down dw-chevron-sub"></i></div>
+                            <div class="dw-sub-content">
+                                <div class="dw-tag dw-behavior-tag" data-desc="Предан защите и опекает партнера.">Protective</div>
+                                <div class="dw-tag dw-behavior-tag" data-desc="Ласковый, преданный и ищет внимания.">Puppy</div>
+                                <div class="dw-tag dw-behavior-tag" data-desc="Игривые намеки и частый флирт.">Flirty</div>
+                                <div class="dw-tag dw-behavior-tag" data-desc="Оптимистичный и радостный персонаж.">Sunshine</div>
+                                <div class="dw-tag dw-behavior-tag" data-desc="Эмпатичный, умеет слушать и поддерживать.">Empathetic</div>
+                                <div class="dw-tag dw-behavior-tag" data-desc="Милый, невинный и добрый.">Cinnamon Roll</div>
+                                <div class="dw-tag dw-behavior-tag" data-desc="Проявляет искреннюю заботу и опекает.">Nurturing</div>
+                            </div>
+                        </div>
+                        <div class="dw-sub-category">
+                            <div class="dw-sub-title"><i class="fa-solid fa-moon"></i><h5>Темные черты</h5><i class="fa-solid fa-chevron-down dw-chevron-sub"></i></div>
+                            <div class="dw-sub-content">
+                                <div class="dw-tag dw-behavior-tag" data-desc="Грубый, злой и агрессивный.">Aggressive</div>
+                                <div class="dw-tag dw-behavior-tag" data-desc="Холодный, отстраненный и безэмоциональный.">Cold</div>
+                                <div class="dw-tag dw-behavior-tag" data-desc="Одержим объектом любви до насилия.">Yandere</div>
+                                <div class="dw-tag dw-behavior-tag" data-desc="Скрытно управляет другими через ложь.">Manipulative</div>
+                                <div class="dw-tag dw-behavior-tag" data-desc="Харизматичный и гениальный интриган.">Magnificent Bastard</div>
+                                <div class="dw-tag dw-behavior-tag" data-desc="Наслаждается чужой болью или страданиями.">Sadistic</div>
+                                <div class="dw-tag dw-behavior-tag" data-desc="Тайно следит и преследует объект любви.">Stalker</div>
+                                <div class="dw-tag dw-behavior-tag" data-desc="Высокомерный, считает себя выше других.">Arrogant</div>
+                                <div class="dw-tag dw-behavior-tag" data-desc="Ненавидит себя, склонен к саморазрушению.">Self-loathing</div>
+                                <div class="dw-tag dw-behavior-tag" data-desc="Преследует удовольствия как главную цель.">Hedonistic</div>
+                                <div class="dw-tag dw-behavior-tag" data-desc="Подозрительный и всегда ждет предательства.">Paranoid</div>
+                            </div>
+                        </div>
+                        <div class="dw-sub-category">
+                            <div class="dw-sub-title"><i class="fa-solid fa-arrows-left-right"></i><h5>Нейтральные черты</h5><i class="fa-solid fa-chevron-down dw-chevron-sub"></i></div>
+                            <div class="dw-sub-content">
+                                <div class="dw-tag dw-behavior-tag" data-desc="Грубый снаружи, но мягкий внутри.">Tsundere</div>
+                                <div class="dw-tag dw-behavior-tag" data-desc="Острый сарказм и ирония в речи.">Sarcastic</div>
+                                <div class="dw-tag dw-behavior-tag" data-desc="Подчеркнуто вежлив и официален.">Formal</div>
+                                <div class="dw-tag dw-behavior-tag" data-desc="Грустный, меланхоличный и замкнутый.">Melancholic</div>
+                                <div class="dw-tag dw-behavior-tag" data-desc="Доминирует и берет контроль.">Dominant</div>
+                                <div class="dw-tag dw-behavior-tag" data-desc="Покорен и ищет одобрения.">Submissive</div>
+                                <div class="dw-tag dw-behavior-tag" data-desc="Эмоционально устойчив и сдержан.">Stoic</div>
+                                <div class="dw-tag dw-behavior-tag" data-desc="Остроумен, быстро находит смешные ответы.">Witty</div>
+                                <div class="dw-tag dw-behavior-tag" data-desc="Безразличен и лишен интереса к происходящему.">Apathetic</div>
+                                <div class="dw-tag dw-behavior-tag" data-desc="Загадочен, его мотивы трудно понять.">Enigmatic</div>
+                                <div class="dw-tag dw-behavior-tag" data-desc="Озорной, любит подшучивать и проказничать.">Mischievous</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ТРОПЫ -->
+                <div class="dw-category cat-trope">
+                    <div class="dw-cat-title">
+                        <i class="fa-solid fa-masks-theater"></i>
+                        <h4>Тропы</h4>
+                        <i class="fa-solid fa-chevron-down dw-chevron"></i>
+                    </div>
+                    <div class="dw-cat-content">
+                        <div class="dw-sub-category">
+                            <div class="dw-sub-title"><i class="fa-solid fa-heart-circle-bolt"></i><h5>Romance Dynamics (Динамика)</h5><i class="fa-solid fa-chevron-down dw-chevron-sub"></i></div>
+                            <div class="dw-sub-content">
+                                <div class="dw-tag dw-trope-tag" data-desc="От жгучей ненависти до всепоглощающей страсти.">Enemies to Lovers</div>
+                                <div class="dw-tag dw-trope-tag" data-desc="Медленное осознание, что «просто друг» — это любовь.">Friends to Lovers</div>
+                                <div class="dw-tag dw-trope-tag" data-desc="Случайная встреча, изменившая всё.">Strangers to Lovers</div>
+                                <div class="dw-tag dw-trope-tag" data-desc="Соперничество, переходящее в сексуальное напряжение.">Rivals to Lovers</div>
+                                <div class="dw-tag dw-trope-tag" data-desc="Длинный путь с промежуточной стадией доверия.">Enemies to Friends to Lovers</div>
+                                <div class="dw-tag dw-trope-tag" data-desc="Не могут быть вместе, но и врозь им еще хуже.">Love/Hate Relationship</div>
+                                <div class="dw-tag dw-trope-tag" data-desc="Тайно влюблены, уверены, что это не взаимно.">Mutual Pining</div>
+                                <div class="dw-tag dw-trope-tag" data-desc="Любовь вопреки законам или враждующим семьям.">Forbidden Love</div>
+                                <div class="dw-tag dw-trope-tag" data-desc="Встреча бывших спустя много лет.">Second Chance Romance</div>
+                                <div class="dw-tag dw-trope-tag" data-desc="Все видят их любовь, кроме них самих.">Oblivious Characters</div>
+                                <div class="dw-tag dw-trope-tag" data-desc="Влюбленные, которым судьба мешает быть вместе.">Star-crossed Lovers</div>
+                                <div class="dw-tag dw-trope-tag" data-desc="Связь между спасителем и тем, кто хочет всё погубить.">Hero/Villain Dynamic</div>
+                                <div class="dw-tag dw-trope-tag" data-desc="Он (или доминант) влюбляется намного раньше.">He falls first</div>
+                            </div>
+                        </div>
+                        <div class="dw-sub-category">
+                            <div class="dw-sub-title"><i class="fa-solid fa-person-walking-arrow-right"></i><h5>Plot Situational (Ситуации)</h5><i class="fa-solid fa-chevron-down dw-chevron-sub"></i></div>
+                            <div class="dw-sub-content">
+                                <div class="dw-tag dw-trope-tag" data-desc="В отеле осталась только одна кровать.">Only One Bed</div>
+                                <div class="dw-tag dw-trope-tag" data-desc="Заперты вместе (в лифте, в хижине, в бурю).">Trapped Together</div>
+                                <div class="dw-tag dw-trope-tag" data-desc="Притворяются парой, но чувства становятся настоящими.">Fake Dating / Fake Marriage</div>
+                                <div class="dw-tag dw-trope-tag" data-desc="Работа под прикрытием в роли влюбленных.">Undercover as a Couple</div>
+                                <div class="dw-tag dw-trope-tag" data-desc="Должен защищать, но не должен влюбляться.">Bodyguard / Client</div>
+                                <div class="dw-tag dw-trope-tag" data-desc="Классический треугольник (или многоугольник).">Love Triangle</div>
+                                <div class="dw-tag dw-trope-tag" data-desc="Один скрывает, кто он на самом деле.">Secret Identity</div>
+                                <div class="dw-tag dw-trope-tag" data-desc="Один забыл всё, другой пытается вернуть любовь.">Amnesia</div>
+                                <div class="dw-tag dw-trope-tag" data-desc="Неверно понятое слово, ведущее к катастрофе.">Misunderstanding</div>
+                                <div class="dw-tag dw-trope-tag" data-desc="Брак по расчету, перерастающий в чувства.">Arranged Marriage</div>
+                            </div>
+                        </div>
+                        <div class="dw-sub-category">
+                            <div class="dw-sub-title"><i class="fa-solid fa-scroll"></i><h5>Themes & Bonds (Связи)</h5><i class="fa-solid fa-chevron-down dw-chevron-sub"></i></div>
+                            <div class="dw-sub-content">
+                                <div class="dw-tag dw-trope-tag" data-desc="Предательство доверия, которое нужно искупить.">Betrayal</div>
+                                <div class="dw-tag dw-trope-tag" data-desc="Один портит другого или один спасает другого.">Corruption / Fix-it</div>
+                                <div class="dw-tag dw-trope-tag" data-desc="Группа изгоев, ставших друг другу ближе родных.">Found Family</div>
+                                <div class="dw-tag dw-trope-tag" data-desc="Усыновление, опека и глубокие не-кровные связи.">Adopted Family</div>
+                                <div class="dw-tag dw-trope-tag" data-desc="Богатый и бедный, господин и слуга. Порог классов.">Class Difference</div>
+                                <div class="dw-tag dw-trope-tag" data-desc="Герой с тяжелой ношей предназначения.">Chosen One</div>
+                                <div class="dw-tag dw-trope-tag" data-desc="Уход, забота и нежность к раненому/больному.">Hurt/Comfort</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- СТИЛЬ И ФОРМАТ -->
+                <div class="dw-category cat-style">
+                    <div class="dw-cat-title"><i class="fa-solid fa-pen-fancy"></i><h4>Стиль и Формат</h4><i class="fa-solid fa-chevron-down dw-chevron"></i></div>
+                    <div class="dw-cat-content">
+                        <div class="dw-tag dw-style-tag" data-desc="Подробное литературное описание эмоций и окружения.">Descriptive</div>
+                        <div class="dw-tag dw-style-tag" data-desc="Метафоричная, витиеватая и красивая речь.">Poetic</div>
+                        <div class="dw-tag dw-style-tag" data-desc="Грубая речь, мат и просторечные выражения.">Vulgar language</div>
+                    </div>
+                </div>
+
+                <!-- ФЕТИШИ -->
+                <div class="dw-category cat-fetish">
+                    <div class="dw-cat-title"><i class="fa-solid fa-link"></i><h4>Фетиши</h4><i class="fa-solid fa-chevron-down dw-chevron"></i></div>
+                    <div class="dw-cat-content">
+                        <div class="dw-sub-category">
+                            <div class="dw-sub-title"><i class="fa-solid fa-fire-flame-curved"></i><h5>Sexual Acts</h5><i class="fa-solid fa-chevron-down dw-chevron-sub"></i></div>
+                            <div class="dw-sub-content">
+                                <div class="dw-tag dw-fetish-tag" data-desc="Оральный секс (М). Акцент на ощущениях.">Blowjob</div>
+                                <div class="dw-tag dw-fetish-tag" data-desc="Оральный секс (Ж). Внимание к ласкам.">Cunnilingus</div>
+                                <div class="dw-tag dw-fetish-tag" data-desc="Возбуждение от наблюдения за мастурбацией.">Watching someone masturbate</div>
+                                <div class="dw-tag dw-fetish-tag" data-desc="Близость в общественном месте. Риск и адреналин.">Public sex</div>
+                                <div class="dw-tag dw-fetish-tag" data-desc="Близость в одежде. Тактильность ткани.">Sex in clothes</div>
+                                <div class="dw-tag dw-fetish-tag" data-desc="Ролевые игры (учитель/ученик и т.д.).">Roleplay (sexual)</div>
+                                <div class="dw-tag dw-fetish-tag" data-desc="Секс с 3+ партнерами. Сенсорная перегрузка.">Group sex</div>
+                                <div class="dw-tag dw-fetish-tag" data-desc="Интенсивные ласки без проникновения.">Petting</div>
+                                <div class="dw-tag dw-fetish-tag" data-desc="Чувственный массаж с маслом.">Massage</div>
+                                <div class="dw-tag dw-fetish-tag" data-desc="Все виды ласк, кроме проникновения.">Non-penetrative sex</div>
+                                <div class="dw-tag dw-fetish-tag" data-desc="Грязные разговоры и откровенные пошлости.">Dirty Talk</div>
+                                <div class="dw-tag dw-fetish-tag" data-desc="Значительная разница в возрасте и опыте.">Age Difference</div>
+                                <div class="dw-tag dw-fetish-tag" data-desc="Оставление меток: засосы, укусы, царапины.">Marking/Biting</div>
+                                <div class="dw-tag dw-fetish-tag" data-desc="Шлепки и воздействие ладонью или инструментом.">Spanking</div>
+                                <div class="dw-tag dw-fetish-tag" data-desc="Удары, порождающие сочетание боли и удовольствия.">Impact Play</div>
+                            </div>
+                        </div>
+                        <div class="dw-sub-category">
+                            <div class="dw-sub-title"><i class="fa-solid fa-hand-holding-heart"></i><h5>Physical & Power</h5><i class="fa-solid fa-chevron-down dw-chevron-sub"></i></div>
+                            <div class="dw-sub-content">
+                                <div class="dw-tag dw-fetish-tag" data-desc="Финансовое доминирование и полное обеспечение (Мужчина). Акцент на разнице в статусе.">Sugar Daddy</div>
+                                <div class="dw-tag dw-fetish-tag" data-desc="Финансовое доминирование и полное обеспечение (Женщина). Акцент на разнице в статусе.">Sugar Mommy</div>
+                                <div class="dw-tag dw-fetish-tag" data-desc="Использование ошейника и поводка для контроля.">Collar & Leash</div>
+                                <div class="dw-tag dw-fetish-tag" data-desc="Лишение зрения с помощью повязки или маски.">Blindfold</div>
+                                <div class="dw-tag dw-fetish-tag" data-desc="Использование наручников для ограничения движений.">Handcuffs</div>
+                                <div class="dw-tag dw-fetish-tag" data-desc="Сенсорная депривация или перегрузка.">Sensory Play</div>
+                                <div class="dw-tag dw-fetish-tag" data-desc="Ограничение дыхания (строго по согласию!).">Breath Control</div>
+                                <div class="dw-tag dw-fetish-tag" data-desc="БДСМ: бондаж, контроль и боль/удовольствие.">BDSM</div>
+                                <div class="dw-tag dw-fetish-tag" data-desc="Яркий акцент на неравенство власти и статуса.">Power Dynamics</div>
+                                <div class="dw-tag dw-fetish-tag" data-desc="Хозяин и Слуга: покорность и приказы.">Master/Servant</div>
+                                <div class="dw-tag dw-fetish-tag" data-desc="Риск быть замеченным, эксгибиционизм.">Exhibitionism</div>
+                                <div class="dw-tag dw-fetish-tag" data-desc="Использование похвалы или оскорблений.">Praise/Degradation</div>
+                                <div class="dw-tag dw-fetish-tag" data-desc="Подавление воли и контроль разума.">Mind Control</div>
+                                <div class="dw-tag dw-fetish-tag" data-desc="Доведение партнера до изнеможения ласками.">Overstimulation</div>
+                                <div class="dw-tag dw-fetish-tag" data-desc="Интим с персонажем, пока он спит.">Somnophilia</div>
+                            </div>
+                        </div>
+                        <div class="dw-sub-category">
+                            <div class="dw-sub-title"><i class="fa-solid fa-eye"></i><h5>Aesthetics</h5><i class="fa-solid fa-chevron-down dw-chevron-sub"></i></div>
+                            <div class="dw-sub-content">
+                                <div class="dw-tag dw-fetish-tag" data-desc="Внимание на униформу и аксессуары власти.">Uniforms</div>
+                                <div class="dw-tag dw-fetish-tag" data-desc="Огромная разница в росте и комплекции.">Size Difference</div>
+                                <div class="dw-tag dw-fetish-tag" data-desc="Эстетика ног, ступней и поклонение им.">Feet</div>
+                                <div class="dw-tag dw-fetish-tag" data-desc="Внимание к груди, ласкам и форме.">Breasts</div>
+                                <div class="dw-tag dw-fetish-tag" data-desc="Эстетика очков и их снятия в интимные моменты.">Glasses</div>
+                                <div class="dw-tag dw-fetish-tag" data-desc="Щупальца, монстры и иная анатомия.">Monster/Tentacles</div>
+                                <div class="dw-tag dw-fetish-tag" data-desc="Поклонение телу или отдельным его частям.">Body Worship</div>
+                                <div class="dw-tag dw-fetish-tag" data-desc="Эротическое использование горячего воска.">Wax Play</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ЦЕНЗУРА -->
+                <div class="dw-category cat-censor">
+                    <div class="dw-cat-title"><i class="fa-solid fa-triangle-exclamation"></i><h4>Цензура</h4><i class="fa-solid fa-chevron-down dw-chevron"></i></div>
+                    <div class="dw-cat-content">
+                        <div class="dw-tag dw-censorship-tag" data-desc="Никакого 18+. Только романтика.">SFW Only</div>
+                        <div class="dw-tag dw-censorship-tag" data-desc="NSFW сцены разрешены и поощряются.">NSFW Allowed</div>
+                        <div class="dw-tag dw-censorship-tag" data-desc="Экстремальная жестокость и увечья.">Extreme Gore</div>
+                        <div class="dw-tag dw-censorship-tag" data-desc="Сюжет вторичен, фокус только на сексе.">Pure Smut</div>
+                    </div>
+                </div>
+
+                <!-- КАСТОМ -->
+                <div class="dw-category cat-custom">
+                    <div class="dw-cat-title"><i class="fa-solid fa-pen-nib"></i><h4>Кастом</h4><i class="fa-solid fa-chevron-down dw-chevron"></i></div>
+                    <div class="dw-cat-content">
+                        <div class="dw-custom-input-group">
+                            <input type="text" id="dw-custom-name" class="dw-input-field" placeholder="Название тега...">
+                            <div class="dw-textarea-wrapper">
+                                <textarea id="dw-custom-prompt" class="dw-input-field" placeholder="Текст промпта (правило для ИИ)..."></textarea>
+                                <div id="dw-custom-prompt-expand" title="Развернуть окно"><i class="fa-solid fa-expand"></i></div>
+                            </div>
+                            <button id="dw-custom-add">Создать тег</button>
+                        </div>
+                        <div id="dw-custom-tags-container"></div>
+                    </div>
+                </div>
+
+            </div>
+            
+            <div class="dw-footer">
+                <div class="dw-footer-controls">
+                    <div class="dw-footer-title">Выбрано:</div>
+                    <div class="dw-depth-container"><label for="dw-depth-input">Глубина:</label><input type="number" id="dw-depth-input" value="0" min="0" max="99"></div>
+                </div>
+                <div id="dw-selected-tags">Ничего не выбрано</div>
+            </div>
+            
+        </div>
+    </div>
+</div>
