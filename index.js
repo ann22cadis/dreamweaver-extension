@@ -402,6 +402,9 @@ async function init() {
         const isExpanded = wrapper.toggleClass('expanded').hasClass('expanded');
         $('#dreamweaver-modal').toggleClass('dw-has-expanded', isExpanded);
         $(this).find('i').toggleClass('fa-expand fa-compress');
+        if (isExpanded) {
+            setTimeout(() => wrapper.find('textarea').focus(), 100);
+        }
     });
     $(document).on('click', '.dw-summary-tag', function() { const txt = $(this).text(); $('.dw-tag').filter(function(){return getTagName(this)===txt;}).removeClass('active'); saveState(); });
     $(document).on('click', '.dw-cat-title', function() { $(this).next('.dw-cat-content').slideToggle(200); $(this).find('.dw-chevron').toggleClass('fa-chevron-down fa-chevron-up'); });
