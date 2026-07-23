@@ -394,7 +394,7 @@ async function init() {
             saveState(); 
         }
     });
-    $(document).on('click', '.dw-custom-edit', function(e) { e.stopPropagation(); const n = $(this).closest('.dw-tag').find('.dw-custom-tag-name').text().trim(); $('#dw-custom-name').val(n); $('#dw-custom-prompt').val(customPromptsData[n]); delete customPromptsData[n]; $(this).closest('.dw-tag').remove(); saveState(); });
+    $(document).on('click', '.dw-custom-edit', function(e) { e.stopPropagation(); const tagEl = $(this).closest('.dw-tag'); const n = tagEl.find('.dw-custom-tag-name').text().trim(); const isActive = tagEl.hasClass('active'); $('#dw-custom-name').val(n).data('editing', n).data('was-active', isActive); $('#dw-custom-prompt').val(customPromptsData[n]); $('#dw-custom-add').text('Сохранить'); });
     $(document).on('input', '#dw-depth-input', saveState);
     $(document).on('click', '#dw-info-toggle', function() { $('#dreamweaver-modal').toggleClass('show-descriptions'); $(this).toggleClass('active'); });
     $(document).on('click', '#dw-custom-prompt-expand', function() {
@@ -411,7 +411,28 @@ async function init() {
     $(document).on('click', '.dw-sub-title', function() { $(this).next('.dw-sub-content').slideToggle(200); $(this).find('.dw-chevron-sub').toggleClass('fa-chevron-down fa-chevron-up'); });
     $(document).on('click', '#dw-custom-add', () => {
         const n = $('#dw-custom-name').val().trim(), p = $('#dw-custom-prompt').val().trim();
-        if (n && p) { customPromptsData[n] = p; const el = buildCustomTagEl(n); el.addClass('active'); $('#dw-custom-tags-container').append(el); $('#dw-custom-name').val(''); $('#dw-custom-prompt').val(''); saveState(); }
+        const editing = $('#dw-custom-name').data('editing');
+        let wasActive = $('#dw-custom-name').data('was-active');
+        if (wasActive === undefined) wasActive = true;
+        if (n && p) {
+            if (editing && editing !== n && customPromptsData[editing]) {
+                delete customPromptsData[editing];
+                $('.dw-custom-tag').filter(function() { return getTagName(this) === editing; }).remove();
+            }
+            if (customPromptsData[n]) {
+                const existing = $('.dw-custom-tag').filter(function() { return getTagName(this) === n; });
+                if (existing.hasClass('active')) wasActive = true;
+                existing.remove();
+            }
+            customPromptsData[n] = p; 
+            const el = buildCustomTagEl(n); 
+            if (wasActive) el.addClass('active'); 
+            $('#dw-custom-tags-container').append(el); 
+            $('#dw-custom-name').val('').removeData('editing').removeData('was-active'); 
+            $('#dw-custom-prompt').val(''); 
+            $('#dw-custom-add').text('Создать тег');
+            saveState(); 
+        }
     });
     console.log('[DW] init() DONE');
 }
