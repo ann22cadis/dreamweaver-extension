@@ -1,4 +1,4 @@
-console.log('[DW] index.js loaded - v2.10');
+console.log('[DW] index.js loaded - v2.11');
 import { eventSource, event_types, extension_prompt_types } from "../../../../script.js";
 import { getContext } from "../../../st-context.js";
 
@@ -66,6 +66,15 @@ function setChatData(chatData) {
     used.forEach(t => { if (customPromptsData[t]) custom[t] = customPromptsData[t]; });
     ctx.chatMetadata[META_KEY] = { data: chatData, custom };
     ctx.saveMetadataDebounced();
+}
+
+// Chats set up before v2.11 keep their state only in localStorage; copy it into the chat file
+// on open so it travels with exports without the user having to re-click a tag.
+function migrateLegacyChatData(chatId) {
+    const ctx = getContext();
+    if (!ctx?.chatId || !ctx.chatMetadata || ctx.chatMetadata[META_KEY]?.data) return;
+    const legacy = lsLoad()[chatId];
+    if (legacy) setChatData(legacy);
 }
 
 // ─── Prompts ─────────────────────────────────────────────────────────────────
@@ -229,6 +238,7 @@ function loadState() {
         }
         const depthInput = document.getElementById('dw-depth-input');
         if (depthInput && allData.__depth !== undefined) depthInput.value = allData.__depth;
+        if (chatId) migrateLegacyChatData(chatId);
         renderCustomTags();
         if (!chatId) return;
         const chatData = getChatData(chatId);
