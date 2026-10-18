@@ -4,6 +4,7 @@
     "version": "1.0.0",
     "description": "Сюжетный пульт",
     "author": "Dreamer",
+    "homepage_url": "https://github.com/ann22cadis/dreamweaver-extension",
     "entryPoint": "index.js",
     "js": [
         "index.js"

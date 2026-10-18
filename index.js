@@ -3,6 +3,7 @@ import { eventSource, event_types, extension_prompt_types } from "../../../../sc
 import { getContext } from "../../../st-context.js";
 
 const extensionName = "dreamweaver-extension";
+const META_KEY = 'dreamweaver'; // key inside chat metadata; must stay constant so exported chats keep their tags
 const extensionFolderPath = `/scripts/extensions/third-party/${extensionName}/`;
 const LS_KEY = 'dw_v2_data';
 
@@ -39,6 +40,32 @@ function lsLoad() {
 
 function lsSave(data) {
     try { localStorage.setItem(LS_KEY, JSON.stringify(data)); } catch (e) { console.error('DW lsSave:', e); }
+}
+
+// Per-chat state lives in chat metadata (saved inside the chat file, so it survives export/import).
+// localStorage is kept for global data (custom tags, depth) and as a read-only fallback for old chats.
+
+function emptyChatData() {
+    return { lastTarget: 'all', all: { enabled: true, tags: [] }, chars: {} };
+}
+
+function getChatData(chatId) {
+    try {
+        const meta = getContext()?.chatMetadata?.[META_KEY];
+        if (meta?.data) return meta.data;
+    } catch { /* fall through to legacy storage */ }
+    return lsLoad()[chatId] || emptyChatData();
+}
+
+function setChatData(chatData) {
+    const ctx = getContext();
+    if (!ctx?.chatMetadata) return;
+    // Embed the prompt text of used custom tags so they still work on a device that doesn't have them.
+    const used = new Set([...(chatData.all?.tags || []), ...Object.values(chatData.chars || {}).flatMap(s => s.tags || [])]);
+    const custom = {};
+    used.forEach(t => { if (customPromptsData[t]) custom[t] = customPromptsData[t]; });
+    ctx.chatMetadata[META_KEY] = { data: chatData, custom };
+    ctx.saveMetadataDebounced();
 }
 
 // ─── Prompts ─────────────────────────────────────────────────────────────────
@@ -123,8 +150,7 @@ function sendPromptToCore() {
         const depthInput = document.getElementById('dw-depth-input');
         const depthValue = depthInput ? Math.max(0, parseInt(depthInput.value, 10) || 0) : 0;
 
-        const allData = lsLoad();
-        const chatData = allData[chatId] || { all: { enabled: true, tags: [] }, chars: {} };
+        const chatData = getChatData(chatId);
 
         if (!$('#dw-power-toggle').hasClass('active')) {
             context.setExtensionPrompt(extensionName, '', extension_prompt_types.IN_CHAT, 0);
@@ -171,17 +197,18 @@ function saveState() {
         const activeTags = [];
         $('.dw-tag.active').each(function () { activeTags.push(getTagName(this)); });
         const state = { enabled: $('#dw-power-toggle').hasClass('active'), tags: activeTags };
-        const allData = lsLoad();
-        if (!allData[chatId]) allData[chatId] = { lastTarget: 'all', all: { enabled: true, tags: [] }, chars: {} };
-        allData[chatId].lastTarget = currentTargetChar;
-        if (currentTargetChar === 'all') allData[chatId].all = state;
+        const chatData = getChatData(chatId);
+        chatData.lastTarget = currentTargetChar;
+        if (currentTargetChar === 'all') chatData.all = state;
         else {
-            if (!allData[chatId].chars) allData[chatId].chars = {};
-            allData[chatId].chars[currentTargetChar] = state;
+            if (!chatData.chars) chatData.chars = {};
+            chatData.chars[currentTargetChar] = state;
         }
+        const allData = lsLoad();
         allData.__custom = customPromptsData;
         allData.__depth = document.getElementById('dw-depth-input')?.value || '0';
         lsSave(allData);
+        setChatData(chatData);
         updateSummaryUI();
     } catch (e) { console.error("[DW] saveState:", e); }
 }
@@ -191,11 +218,20 @@ function loadState() {
         const chatId = getChatId();
         const allData = lsLoad();
         customPromptsData = allData.__custom || {};
+        // Custom tags embedded in an imported chat: add the ones this device doesn't have yet.
+        const embedded = getContext()?.chatMetadata?.[META_KEY]?.custom;
+        if (embedded) {
+            let added = false;
+            for (const [name, prompt] of Object.entries(embedded)) {
+                if (!(name in customPromptsData)) { customPromptsData[name] = prompt; added = true; }
+            }
+            if (added) { allData.__custom = customPromptsData; lsSave(allData); }
+        }
         const depthInput = document.getElementById('dw-depth-input');
         if (depthInput && allData.__depth !== undefined) depthInput.value = allData.__depth;
         renderCustomTags();
         if (!chatId) return;
-        const chatData = allData[chatId] || { lastTarget: 'all', all: { enabled: true, tags: [] }, chars: {} };
+        const chatData = getChatData(chatId);
         currentTargetChar = chatData.lastTarget || 'all';
         const state = (currentTargetChar === 'all') ? (chatData.all || { enabled: true, tags: [] }) : (chatData.chars?.[currentTargetChar] || { enabled: true, tags: [] });
         $('.dw-tag').removeClass('active');
@@ -214,9 +250,8 @@ function renderCustomTags() {
     Object.keys(customPromptsData).forEach(name => { container.append(buildCustomTagEl(name)); });
     const chatId = getChatId();
     if (chatId) {
-        const allData = lsLoad();
-        const chatData = allData[chatId];
-        if (chatData) {
+        const chatData = getChatData(chatId);
+        {
             const state = (currentTargetChar === 'all') ? chatData.all : (chatData.chars?.[currentTargetChar]);
             if (state && state.tags) {
                 state.tags.forEach(t => {
@@ -255,9 +290,8 @@ function updateSummaryUI() {
 
     if (currentTargetChar !== 'all') {
         const chatId = getChatId();
-        const allData = lsLoad();
-        const chatData = allData[chatId] || { all: { enabled: true, tags: [] }, chars: {} };
-        
+        const chatData = getChatData(chatId);
+
         if (chatData.all?.enabled && chatData.all?.tags) {
             chatData.all.tags.forEach(t => {
                 if (!processedTags.has(t)) {
@@ -370,10 +404,9 @@ async function init() {
         // Update metadata in storage before loading the new state
         const chatId = getChatId();
         if (chatId) {
-            const allData = lsLoad();
-            if (!allData[chatId]) allData[chatId] = { all: { enabled: true, tags: [] }, chars: {} };
-            allData[chatId].lastTarget = newName;
-            lsSave(allData);
+            const chatData = getChatData(chatId);
+            chatData.lastTarget = newName;
+            setChatData(chatData);
         }
 
         currentTargetChar = newName;
