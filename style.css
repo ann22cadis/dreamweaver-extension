@@ -257,7 +257,7 @@
 
 .dw-cat-content {
     display: none;
-    padding: 8px 16px 16px 16px !important;
+    padding: 8px 16px 16px 16px;
     box-sizing: border-box;
 }
 
@@ -303,7 +303,7 @@
 
 .dw-sub-content {
     display: none;
-    padding: 14px 16px 16px 16px !important;
+    padding: 14px 16px 16px 16px;
     box-sizing: border-box;
 }
 
@@ -452,6 +452,12 @@
 
 #dw-custom-prompt-expand:hover {
     color: #af9ecc;
+}
+
+/* backdrop-filter makes the container the containing block for position:fixed children,
+   so the expanded editor would be clipped by its overflow:hidden. Drop it while expanded. */
+#dreamweaver-modal.dw-has-expanded .dw-flex-container {
+    backdrop-filter: none;
 }
 
 .dw-textarea-wrapper.expanded {

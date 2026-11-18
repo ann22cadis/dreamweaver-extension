@@ -19,6 +19,10 @@ function getTagName(el) {
     return $(el).contents().filter(function () { return this.nodeType === 3; }).text().trim();
 }
 
+function escapeHtml(str) {
+    return String(str ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
 function getChatId() {
     try {
         const ctx = getContext();
@@ -240,16 +244,33 @@ function loadState() {
         if (depthInput && allData.__depth !== undefined) depthInput.value = allData.__depth;
         if (chatId) migrateLegacyChatData(chatId);
         renderCustomTags();
-        if (!chatId) return;
+        if (!chatId) {
+            // No chat open: don't keep showing the previous chat's selection.
+            $('.dw-tag').removeClass('active');
+            updateSummaryUI();
+            return;
+        }
         const chatData = getChatData(chatId);
         currentTargetChar = chatData.lastTarget || 'all';
-        const state = (currentTargetChar === 'all') ? (chatData.all || { enabled: true, tags: [] }) : (chatData.chars?.[currentTargetChar] || { enabled: true, tags: [] });
-        $('.dw-tag').removeClass('active');
-        (state.tags || []).forEach(t => { $('.dw-tag').filter(function () { return getTagName(this) === t; }).addClass('active'); });
-        if (state.enabled) $('#dw-power-toggle').addClass('active');
-        else $('#dw-power-toggle').removeClass('active');
-        updateSummaryUI();
+        applyTargetState(chatData);
     } catch (e) { console.error("[DW] loadState:", e); }
+}
+
+// Re-apply tag selection for currentTargetChar without re-reading lastTarget.
+function loadStateForTarget() {
+    try {
+        const chatId = getChatId();
+        if (!chatId) return;
+        applyTargetState(getChatData(chatId));
+    } catch (e) { console.error("[DW] loadStateForTarget:", e); }
+}
+
+function applyTargetState(chatData) {
+    const state = (currentTargetChar === 'all') ? (chatData.all || { enabled: true, tags: [] }) : (chatData.chars?.[currentTargetChar] || { enabled: true, tags: [] });
+    $('.dw-tag').removeClass('active');
+    (state.tags || []).forEach(t => { $('.dw-tag').filter(function () { return getTagName(this) === t; }).addClass('active'); });
+    $('#dw-power-toggle').toggleClass('active', state.enabled !== false);
+    updateSummaryUI();
 }
 
 // ─── UI ───────────────────────────────────────────────────────────────────────
@@ -273,7 +294,7 @@ function renderCustomTags() {
 }
 
 function buildCustomTagEl(name) {
-    return $(`<div class="dw-tag dw-custom-tag dw-custom-item"><span class="dw-custom-tag-name">${name}</span><span class="dw-custom-actions"><i class="fa-solid fa-pen dw-custom-edit"></i><i class="fa-solid fa-trash dw-custom-delete"></i></span></div>`);
+    return $(`<div class="dw-tag dw-custom-tag dw-custom-item"><span class="dw-custom-tag-name">${escapeHtml(name)}</span><span class="dw-custom-actions"><i class="fa-solid fa-pen dw-custom-edit"></i><i class="fa-solid fa-trash dw-custom-delete"></i></span></div>`);
 }
 
 function updateSummaryUI() {
@@ -318,7 +339,7 @@ function updateSummaryUI() {
             else if (el.hasClass('dw-au-tag')) cls = 'sum-au';
             else if (el.hasClass('dw-genre-tag')) cls = 'sum-genre';
         }
-                    selectedUI.push({ text: t + ' (Global)', type: cls + ' sum-inherited' });
+                    selectedUI.push({ text: t + ' (Global)', tag: t, type: cls + ' sum-inherited', inherited: true });
                     processedTags.add(t);
                 }
             });
@@ -328,8 +349,10 @@ function updateSummaryUI() {
     const summaryContainer = $('#dw-selected-tags');
     if (selectedUI.length > 0) {
         summaryContainer.empty();
-        selectedUI.forEach(tag => { 
-            summaryContainer.append(`<span class="dw-summary-tag ${tag.type}">${tag.text}</span>`); 
+        selectedUI.forEach(tag => {
+            const el = $(`<span class="dw-summary-tag ${tag.type}"></span>`).text(tag.text).attr('data-tag', tag.tag ?? tag.text);
+            if (tag.inherited) el.attr('title', 'Глобальный тег — снимается в режиме «Глобально»');
+            summaryContainer.append(el);
         });
     } else { summaryContainer.text('Ничего не выбрано'); }
 }
@@ -355,25 +378,31 @@ function populateCharacterDropdown() {
         if (chatCharsMap.size === 0) { $('#dw-char-btn').hide(); return; }
         if (!isGroupChat()) {
             const [name, url] = [...chatCharsMap.entries()][0];
-            currentTargetChar = 'all'; updateCharBtn(name, url);
+            if (currentTargetChar !== 'all') { currentTargetChar = 'all'; loadStateForTarget(); }
+            updateCharBtn(name, url);
             $('#dw-char-btn').show().css('cursor', 'default');
             return;
         }
         $('#dw-char-btn').show().css('cursor', 'pointer');
         list.append(`<div class="dw-char-option" data-name="all" data-avatar=""><i class="fa-solid fa-globe"></i><span>Глобально</span></div>`);
         chatCharsMap.forEach((url, name) => {
-            const img = (url && url !== 'undefined') ? `<img src="${url}" alt="">` : `<i class="fa-solid fa-user"></i>`;
-            list.append(`<div class="dw-char-option" data-name="${name}" data-avatar="${url}">${img}<span>${name}</span></div>`);
+            const img = (url && url !== 'undefined') ? `<img src="${escapeHtml(url)}" alt="">` : `<i class="fa-solid fa-user"></i>`;
+            list.append(`<div class="dw-char-option" data-name="${escapeHtml(name)}" data-avatar="${escapeHtml(url)}">${img}<span>${escapeHtml(name)}</span></div>`);
         });
-        let opt = list.find(`.dw-char-option[data-name="${currentTargetChar}"]`);
-        if (opt.length === 0) opt = list.find('.dw-char-option[data-name="all"]');
-        updateCharBtn(currentTargetChar, opt.data('avatar'));
+        // Match by attribute value, not a CSS selector: names with quotes would break the selector.
+        let opt = list.find('.dw-char-option').filter(function () { return $(this).attr('data-name') === currentTargetChar; });
+        if (opt.length === 0) {
+            // Saved target is no longer in this group: fall back to global and show its state.
+            opt = list.find('.dw-char-option[data-name="all"]');
+            if (currentTargetChar !== 'all') { currentTargetChar = 'all'; loadStateForTarget(); }
+        }
+        updateCharBtn(currentTargetChar, opt.attr('data-avatar'));
     } catch (e) { console.error("[DW] Dropdown Error:", e); }
 }
 
 function updateCharBtn(name, url) {
     if (name === 'all') $('#dw-char-btn').html('<i class="fa-solid fa-globe"></i>');
-    else if (url) $('#dw-char-btn').html(`<img src="${url}" alt="" style="width:100%;height:100%;object-fit:cover;">`);
+    else if (url) $('#dw-char-btn').html(`<img src="${escapeHtml(url)}" alt="" style="width:100%;height:100%;object-fit:cover;">`);
     else $('#dw-char-btn').html('<i class="fa-solid fa-user"></i>');
 }
 
@@ -391,24 +420,56 @@ async function init() {
     loadState();
     populateCharacterDropdown();
 
-    $(document).on("click", "#dw-menu-item", () => { loadState(); populateCharacterDropdown(); $('#dreamweaver-modal').fadeIn(200); });
-    $(document).on("click", "#dw-close, #dreamweaver-modal, .dw-flex-center", (e) => { 
-        if (e.target.id === 'dw-close' || e.target.id === 'dreamweaver-modal' || $(e.target).hasClass('dw-flex-center')) {
-            const expanded = $('.dw-textarea-wrapper.expanded');
-            if (expanded.length > 0) {
-                expanded.removeClass('expanded');
-                $('#dreamweaver-modal').removeClass('dw-has-expanded');
-                $('#dw-custom-prompt-expand i').removeClass('fa-compress').addClass('fa-expand');
-                return;
-            }
-            $('#dreamweaver-modal').fadeOut(200); $('#dw-char-list').fadeOut(100); 
-        }
+    const collapseExpanded = () => {
+        const expanded = $('.dw-textarea-wrapper.expanded');
+        if (expanded.length === 0) return false;
+        expanded.removeClass('expanded');
+        $('#dreamweaver-modal').removeClass('dw-has-expanded');
+        $('#dw-custom-prompt-expand i').removeClass('fa-compress').addClass('fa-expand');
+        return true;
+    };
+    const closeCharList = () => { const l = $('#dw-char-list'); if (l.is(':visible')) l.stop(true, true).fadeOut(100); };
+    const openModal = () => {
+        loadState();
+        populateCharacterDropdown();
+        $('#dw-char-list').stop(true, true).hide();
+        $('#dreamweaver-modal').stop(true, true).fadeIn(200);
+    };
+    const closeModal = () => {
+        if (collapseExpanded()) return;
+        closeCharList();
+        $('#dreamweaver-modal').stop(true, true).fadeOut(200);
+    };
+
+    $(document).on('click', '#dw-menu-item', openModal);
+    $(document).on('keydown', '#dw-menu-item-container, #dw-menu-item', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); openModal(); }
     });
-    $(document).on('click', '#dw-char-btn', (e) => { if (isGroupChat()) { e.stopPropagation(); $('#dw-char-list').fadeToggle(100); } });
+
+    // Close on backdrop only when the press also started on the backdrop; otherwise selecting
+    // text in an input and releasing outside the window would close the modal.
+    let backdropPress = false;
+    const isBackdrop = (el) => el.id === 'dreamweaver-modal' || $(el).hasClass('dw-flex-center');
+    $(document).on('mousedown touchstart', '#dreamweaver-modal', (e) => { backdropPress = isBackdrop(e.target); });
+    $(document).on('click', '#dw-close', (e) => { e.stopPropagation(); closeModal(); });
+    $(document).on('click', '#dreamweaver-modal', (e) => {
+        if (isBackdrop(e.target) && backdropPress) closeModal();
+        backdropPress = false;
+    });
+    $(document).on('keydown', (e) => {
+        if (e.key !== 'Escape' || !$('#dreamweaver-modal').is(':visible')) return;
+        e.preventDefault();
+        e.stopPropagation();
+        if ($('#dw-char-list').is(':visible')) closeCharList();
+        else closeModal();
+    });
+
+    $(document).on('click', '#dw-char-btn', (e) => { if (isGroupChat()) { e.stopPropagation(); $('#dw-char-list').stop(true, true).fadeToggle(100); } });
     $(document).on('click', '.dw-char-option', function(e) {
         e.stopPropagation();
-        const newName = $(this).data('name');
-        const avatarUrl = $(this).data('avatar');
+        // attr() instead of data(): data() turns names like "123" into numbers.
+        const newName = $(this).attr('data-name');
+        const avatarUrl = $(this).attr('data-avatar');
         if (newName === currentTargetChar) { $('#dw-char-list').fadeOut(100); return; }
 
         // Update metadata in storage before loading the new state
@@ -424,7 +485,7 @@ async function init() {
         $('#dw-char-list').fadeOut(100);
         loadState();
     });
-    $(document).on('click', (e) => { if (!$(e.target).closest('#dw-char-selector').length) $('#dw-char-list').fadeOut(100); });
+    $(document).on('click', (e) => { if (!$(e.target).closest('#dw-char-selector').length) closeCharList(); });
     $(document).on('click', '#dw-power-toggle', function() { $(this).toggleClass('active'); saveState(); });
     $(document).on('click', '.dw-tag:not(.dw-custom-item)', function() { $(this).toggleClass('active'); saveState(); });
     $(document).on('click', '.dw-custom-tag-name', function(e) { e.stopPropagation(); $(this).closest('.dw-tag').toggleClass('active'); saveState(); });
@@ -449,9 +510,23 @@ async function init() {
             setTimeout(() => wrapper.find('textarea').focus(), 100);
         }
     });
-    $(document).on('click', '.dw-summary-tag', function() { const txt = $(this).text(); $('.dw-tag').filter(function(){return getTagName(this)===txt;}).removeClass('active'); saveState(); });
-    $(document).on('click', '.dw-cat-title', function() { $(this).next('.dw-cat-content').slideToggle(200); $(this).find('.dw-chevron').toggleClass('fa-chevron-down fa-chevron-up'); });
-    $(document).on('click', '.dw-sub-title', function() { $(this).next('.dw-sub-content').slideToggle(200); $(this).find('.dw-chevron-sub').toggleClass('fa-chevron-down fa-chevron-up'); });
+    $(document).on('click', '.dw-summary-tag', function() {
+        if ($(this).hasClass('sum-inherited')) return; // belongs to the global set, not this character
+        const txt = $(this).attr('data-tag') ?? $(this).text();
+        $('.dw-tag').filter(function(){return getTagName(this)===txt;}).removeClass('active');
+        saveState();
+    });
+    // Accordions: ignore clicks while animating (rapid clicks queued animations and
+    // desynced the chevron), and set the chevron from the target state instead of toggling.
+    const toggleSection = (title, contentSel, chevronSel) => {
+        const content = $(title).next(contentSel);
+        if (!content.length || content.is(':animated')) return;
+        const willOpen = !content.is(':visible');
+        $(title).find(chevronSel).toggleClass('fa-chevron-up', willOpen).toggleClass('fa-chevron-down', !willOpen);
+        content.slideToggle(200);
+    };
+    $(document).on('click', '.dw-cat-title', function() { toggleSection(this, '.dw-cat-content', '.dw-chevron'); });
+    $(document).on('click', '.dw-sub-title', function() { toggleSection(this, '.dw-sub-content', '.dw-chevron-sub'); });
     $(document).on('click', '#dw-custom-add', () => {
         const n = $('#dw-custom-name').val().trim(), p = $('#dw-custom-prompt').val().trim();
         const editing = $('#dw-custom-name').data('editing');
