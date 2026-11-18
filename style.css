@@ -238,6 +238,7 @@
 .cat-custom .dw-cat-title i:first-child { color: #af9ecc; }
 .cat-au .dw-cat-title i:first-child { color: #818cf8; }
 .cat-world .dw-cat-title i:first-child { color: #fb923c; }
+.cat-negative .dw-cat-title i:first-child { color: #e57373; }
 
 .dw-cat-title h4 {
     margin: 0;
@@ -393,6 +394,10 @@
 .cat-au .dw-au-tag:hover { border-color: #818cf8; color: #ffffff; background-color: rgba(129, 140, 248, 0.15); }
 .cat-au .dw-au-tag.active { background-color: #818cf8; color: #111827; border-color: #818cf8; font-weight: 600; box-shadow: 0 0 10px rgba(129, 140, 248, 0.3); }
 #dreamweaver-modal.show-descriptions .cat-au .dw-au-tag.active::after { color: rgba(17, 24, 39, 0.8); }
+
+.cat-negative .dw-negative-tag:hover { border-color: #e57373; color: #ffffff; background-color: rgba(229, 115, 115, 0.15); }
+.cat-negative .dw-negative-tag.active { background-color: #e57373; color: #111827; border-color: #e57373; font-weight: 600; box-shadow: 0 0 10px rgba(229, 115, 115, 0.3); }
+#dreamweaver-modal.show-descriptions .cat-negative .dw-negative-tag.active::after { color: rgba(17, 24, 39, 0.8); }
 
 /* Custom Intput Fields */
 .dw-custom-input-group {
@@ -592,6 +597,8 @@
 .sum-custom { background-color: #af9ecc; color: #111827; }
 .sum-au { background-color: #818cf8; color: #111827; }
 .sum-world { background-color: #fb923c; color: #111827; }
+.sum-negative { background-color: #e57373; color: #111827; }
+.sum-negative::before { content: '✕ '; }
 
 .sum-inherited {
     opacity: 0.8 !important;

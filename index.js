@@ -106,11 +106,34 @@ async function loadHTML() {
     }
 }
 
+// Tag element class → summary/prompt category. Order here is also the order in the compiled prompt.
+const TAG_TYPES = [
+    ['dw-world-tag', 'sum-world'],
+    ['dw-genre-tag', 'sum-genre'],
+    ['dw-style-tag', 'sum-style'],
+    ['dw-censorship-tag', 'sum-censor'],
+    ['dw-au-tag', 'sum-au'],
+    ['dw-trope-tag', 'sum-trope'],
+    ['dw-behavior-tag', 'sum-behavior'],
+    ['dw-fetish-tag', 'sum-fetish'],
+    ['dw-custom-tag', 'sum-custom'],
+    ['dw-negative-tag', 'sum-negative'],
+];
+
+function getTagType(el) {
+    const $el = $(el);
+    for (const [tagClass, sumClass] of TAG_TYPES) {
+        if ($el.hasClass(tagClass)) return sumClass;
+    }
+    return '';
+}
+
+function findTagEl(name) {
+    return $('.dw-tag').filter(function () { return getTagName(this) === name; }).first();
+}
+
 function compilePromptString(tagNames, targetChar) {
-    const categorized = {
-        'sum-world': [], 'sum-genre': [], 'sum-style': [], 'sum-censor': [],
-        'sum-au': [], 'sum-trope': [], 'sum-behavior': [], 'sum-fetish': [], 'sum-custom': []
-    };
+    const categorized = Object.fromEntries(TAG_TYPES.map(([, sum]) => [sum, []]));
 
     tagNames.forEach(t => {
         if (customPromptsData[t]) {
@@ -118,35 +141,33 @@ function compilePromptString(tagNames, targetChar) {
             return;
         }
         if (promptsData[t]) {
-            const el = $(`.dw-tag`).filter(function () { return getTagName(this) === t; }).first();
-            let typeClass = 'sum-genre';
-            if (el.length) {
-                if (el.hasClass('dw-world-tag')) typeClass = 'sum-world';
-                else if (el.hasClass('dw-genre-tag')) typeClass = 'sum-genre';
-                else if (el.hasClass('dw-behavior-tag')) typeClass = 'sum-behavior';
-                else if (el.hasClass('dw-trope-tag')) typeClass = 'sum-trope';
-                else if (el.hasClass('dw-style-tag')) typeClass = 'sum-style';
-                else if (el.hasClass('dw-fetish-tag')) typeClass = 'sum-fetish';
-                else if (el.hasClass('dw-censorship-tag')) typeClass = 'sum-censor';
-                else if (el.hasClass('dw-custom-tag')) typeClass = 'sum-custom';
-                else if (el.hasClass('dw-au-tag')) typeClass = 'sum-au';
-            }
+            const typeClass = getTagType(findTagEl(t)) || 'sum-genre';
             categorized[typeClass].push(`- ${promptsData[t]}`);
         }
     });
 
+    // Positive instructions first, prohibitions in their own block so the model reads them as hard limits.
     let fullString = '';
-    ['sum-world', 'sum-genre', 'sum-style', 'sum-censor', 'sum-au', 'sum-trope', 'sum-behavior', 'sum-fetish', 'sum-custom'].forEach(cat => {
-        if (categorized[cat].length > 0) fullString += categorized[cat].join('\n') + '\n';
+    TAG_TYPES.forEach(([, cat]) => {
+        if (cat !== 'sum-negative' && categorized[cat].length > 0) fullString += categorized[cat].join('\n') + '\n';
     });
+    const negatives = categorized['sum-negative'];
 
-    if (fullString.trim().length === 0) return "";
+    if (fullString.trim().length === 0 && negatives.length === 0) return "";
 
-    let intro = "This roleplay must strictly be characterized by the following instructions and themes:\n";
+    let intro = '';
     if (targetChar && targetChar !== 'all') {
-        intro = `These strict instructions and behavioral guidelines apply exclusively to the character ${targetChar}:\nThis roleplay must strictly be characterized by the following instructions and themes:\n`;
+        intro = `These strict instructions and behavioral guidelines apply exclusively to the character ${targetChar}:\n`;
     }
-    return `<dreamweaver>\n${intro}${fullString.trim()}\n</dreamweaver>`;
+    let body = '';
+    if (fullString.trim()) {
+        body += `This roleplay must strictly be characterized by the following instructions and themes:\n${fullString.trim()}\n`;
+    }
+    if (negatives.length) {
+        if (body) body += '\n';
+        body += `STRICT PROHIBITIONS. Never do or write any of the following, under any circumstances:\n${negatives.join('\n')}\n`;
+    }
+    return `<dreamweaver>\n${intro}${body.trim()}\n</dreamweaver>`;
 }
 
 // ─── Core Prompt Injection ────────────────────────────────────────────────────
@@ -305,18 +326,7 @@ function updateSummaryUI() {
         const txt = getTagName(this);
         if (!txt) return;
         processedTags.add(txt);
-        
-        let cls = '';
-        if ($(this).hasClass('dw-world-tag')) cls = 'sum-world';
-        else if ($(this).hasClass('dw-genre-tag')) cls = 'sum-genre';
-        else if ($(this).hasClass('dw-behavior-tag')) cls = 'sum-behavior';
-        else if ($(this).hasClass('dw-trope-tag')) cls = 'sum-trope';
-        else if ($(this).hasClass('dw-style-tag')) cls = 'sum-style';
-        else if ($(this).hasClass('dw-fetish-tag')) cls = 'sum-fetish';
-        else if ($(this).hasClass('dw-censorship-tag')) cls = 'sum-censor';
-        else if ($(this).hasClass('dw-custom-tag')) cls = 'sum-custom';
-        else if ($(this).hasClass('dw-au-tag')) cls = 'sum-au';
-        selectedUI.push({ text: txt, type: cls });
+        selectedUI.push({ text: txt, type: getTagType(this) });
     });
 
     if (currentTargetChar !== 'all') {
@@ -326,19 +336,7 @@ function updateSummaryUI() {
         if (chatData.all?.enabled && chatData.all?.tags) {
             chatData.all.tags.forEach(t => {
                 if (!processedTags.has(t)) {
-                    const el = $(`.dw-tag`).filter(function() { return getTagName(this) === t; }).first();
-        let cls = '';
-        if (el.length) {
-            if (el.hasClass('dw-world-tag')) cls = 'sum-world';
-            else if (el.hasClass('dw-behavior-tag')) cls = 'sum-behavior';
-            else if (el.hasClass('dw-trope-tag')) cls = 'sum-trope';
-            else if (el.hasClass('dw-style-tag')) cls = 'sum-style';
-            else if (el.hasClass('dw-fetish-tag')) cls = 'sum-fetish';
-            else if (el.hasClass('dw-censorship-tag')) cls = 'sum-censor';
-            else if (el.hasClass('dw-custom-tag')) cls = 'sum-custom';
-            else if (el.hasClass('dw-au-tag')) cls = 'sum-au';
-            else if (el.hasClass('dw-genre-tag')) cls = 'sum-genre';
-        }
+                    const cls = getTagType(findTagEl(t));
                     selectedUI.push({ text: t + ' (Global)', tag: t, type: cls + ' sum-inherited', inherited: true });
                     processedTags.add(t);
                 }
