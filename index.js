@@ -9,6 +9,7 @@ const LS_KEY = 'dw_v2_data';
 
 let promptsData = {};
 let customPromptsData = {};
+let customNegative = new Set(); // names of custom tags that are prohibitions rather than rules
 let currentTargetChar = 'all';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -68,7 +69,8 @@ function setChatData(chatData) {
     const used = new Set([...(chatData.all?.tags || []), ...Object.values(chatData.chars || {}).flatMap(s => s.tags || [])]);
     const custom = {};
     used.forEach(t => { if (customPromptsData[t]) custom[t] = customPromptsData[t]; });
-    ctx.chatMetadata[META_KEY] = { data: chatData, custom };
+    const customNeg = Object.keys(custom).filter(t => customNegative.has(t));
+    ctx.chatMetadata[META_KEY] = { data: chatData, custom, customNeg };
     ctx.saveMetadataDebounced();
 }
 
@@ -116,8 +118,9 @@ const TAG_TYPES = [
     ['dw-trope-tag', 'sum-trope'],
     ['dw-behavior-tag', 'sum-behavior'],
     ['dw-fetish-tag', 'sum-fetish'],
-    ['dw-custom-tag', 'sum-custom'],
+    // Before dw-custom-tag: a custom prohibition carries both classes and must count as negative.
     ['dw-negative-tag', 'sum-negative'],
+    ['dw-custom-tag', 'sum-custom'],
 ];
 
 function getTagType(el) {
@@ -137,7 +140,7 @@ function compilePromptString(tagNames, targetChar) {
 
     tagNames.forEach(t => {
         if (customPromptsData[t]) {
-            categorized['sum-custom'].push(`- ${customPromptsData[t]}`);
+            categorized[customNegative.has(t) ? 'sum-negative' : 'sum-custom'].push(`- ${customPromptsData[t]}`);
             return;
         }
         if (promptsData[t]) {
@@ -240,6 +243,7 @@ function saveState() {
         }
         const allData = lsLoad();
         allData.__custom = customPromptsData;
+        allData.__customNeg = [...customNegative].filter(n => n in customPromptsData);
         allData.__depth = document.getElementById('dw-depth-input')?.value || '0';
         lsSave(allData);
         setChatData(chatData);
@@ -252,14 +256,21 @@ function loadState() {
         const chatId = getChatId();
         const allData = lsLoad();
         customPromptsData = allData.__custom || {};
+        customNegative = new Set(allData.__customNeg || []);
         // Custom tags embedded in an imported chat: add the ones this device doesn't have yet.
-        const embedded = getContext()?.chatMetadata?.[META_KEY]?.custom;
+        const meta = getContext()?.chatMetadata?.[META_KEY];
+        const embedded = meta?.custom;
         if (embedded) {
+            const embeddedNeg = new Set(meta.customNeg || []);
             let added = false;
             for (const [name, prompt] of Object.entries(embedded)) {
-                if (!(name in customPromptsData)) { customPromptsData[name] = prompt; added = true; }
+                if (!(name in customPromptsData)) {
+                    customPromptsData[name] = prompt;
+                    if (embeddedNeg.has(name)) customNegative.add(name);
+                    added = true;
+                }
             }
-            if (added) { allData.__custom = customPromptsData; lsSave(allData); }
+            if (added) { allData.__custom = customPromptsData; allData.__customNeg = [...customNegative]; lsSave(allData); }
         }
         const depthInput = document.getElementById('dw-depth-input');
         if (depthInput && allData.__depth !== undefined) depthInput.value = allData.__depth;
@@ -315,7 +326,21 @@ function renderCustomTags() {
 }
 
 function buildCustomTagEl(name) {
-    return $(`<div class="dw-tag dw-custom-tag dw-custom-item"><span class="dw-custom-tag-name">${escapeHtml(name)}</span><span class="dw-custom-actions"><i class="fa-solid fa-pen dw-custom-edit"></i><i class="fa-solid fa-trash dw-custom-delete"></i></span></div>`);
+    const neg = customNegative.has(name);
+    return $(`<div class="dw-tag dw-custom-tag dw-custom-item${neg ? ' dw-negative-tag' : ''}"${neg ? ' title="Запрет"' : ''}>${neg ? '<i class="fa-solid fa-ban dw-custom-kind-icon"></i>' : ''}<span class="dw-custom-tag-name">${escapeHtml(name)}</span><span class="dw-custom-actions"><i class="fa-solid fa-pen dw-custom-edit"></i><i class="fa-solid fa-trash dw-custom-delete"></i></span></div>`);
+}
+
+// Kind switch in the custom tag form: 'rule' (regular instruction) or 'negative' (prohibition).
+function getCustomKind() {
+    return $('.dw-kind-btn.active').attr('data-kind') === 'negative' ? 'negative' : 'rule';
+}
+
+function setCustomKind(kind) {
+    const k = kind === 'negative' ? 'negative' : 'rule';
+    $('.dw-kind-btn').each(function () { $(this).toggleClass('active', $(this).attr('data-kind') === k); });
+    $('#dw-custom-prompt').attr('placeholder', k === 'negative'
+        ? 'Что ИИ нельзя делать или писать (например: Never mention the weather)...'
+        : 'Текст промпта (правило для ИИ)...');
 }
 
 function updateSummaryUI() {
@@ -491,12 +516,14 @@ async function init() {
         e.stopPropagation(); 
         const n = $(this).closest('.dw-tag').find('.dw-custom-tag-name').text().trim(); 
         if (confirm(`Вы уверены, что хотите удалить тег "${n}"?`)) {
-            delete customPromptsData[n]; 
-            $(this).closest('.dw-tag').remove(); 
+            delete customPromptsData[n];
+            customNegative.delete(n);
+            $(this).closest('.dw-tag').remove();
             saveState(); 
         }
     });
-    $(document).on('click', '.dw-custom-edit', function(e) { e.stopPropagation(); const tagEl = $(this).closest('.dw-tag'); const n = tagEl.find('.dw-custom-tag-name').text().trim(); const isActive = tagEl.hasClass('active'); $('#dw-custom-name').val(n).data('editing', n).data('was-active', isActive); $('#dw-custom-prompt').val(customPromptsData[n]); $('#dw-custom-add').text('Сохранить'); });
+    $(document).on('click', '.dw-custom-edit', function(e) { e.stopPropagation(); const tagEl = $(this).closest('.dw-tag'); const n = tagEl.find('.dw-custom-tag-name').text().trim(); const isActive = tagEl.hasClass('active'); $('#dw-custom-name').val(n).data('editing', n).data('was-active', isActive); $('#dw-custom-prompt').val(customPromptsData[n]); setCustomKind(customNegative.has(n) ? 'negative' : 'rule'); $('#dw-custom-add').text('Сохранить'); });
+    $(document).on('click', '.dw-kind-btn', function() { setCustomKind($(this).attr('data-kind')); });
     $(document).on('input', '#dw-depth-input', saveState);
     $(document).on('click', '#dw-info-toggle', function() { $('#dreamweaver-modal').toggleClass('show-descriptions'); $(this).toggleClass('active'); });
     $(document).on('click', '#dw-custom-prompt-expand', function() {
@@ -533,6 +560,7 @@ async function init() {
         if (n && p) {
             if (editing && editing !== n && customPromptsData[editing]) {
                 delete customPromptsData[editing];
+                customNegative.delete(editing);
                 $('.dw-custom-tag').filter(function() { return getTagName(this) === editing; }).remove();
             }
             if (customPromptsData[n]) {
@@ -540,12 +568,15 @@ async function init() {
                 if (existing.hasClass('active')) wasActive = true;
                 existing.remove();
             }
-            customPromptsData[n] = p; 
-            const el = buildCustomTagEl(n); 
-            if (wasActive) el.addClass('active'); 
-            $('#dw-custom-tags-container').append(el); 
-            $('#dw-custom-name').val('').removeData('editing').removeData('was-active'); 
-            $('#dw-custom-prompt').val(''); 
+            customPromptsData[n] = p;
+            if (getCustomKind() === 'negative') customNegative.add(n);
+            else customNegative.delete(n);
+            const el = buildCustomTagEl(n);
+            if (wasActive) el.addClass('active');
+            $('#dw-custom-tags-container').append(el);
+            $('#dw-custom-name').val('').removeData('editing').removeData('was-active');
+            $('#dw-custom-prompt').val('');
+            setCustomKind('rule');
             $('#dw-custom-add').text('Создать тег');
             saveState(); 
         }

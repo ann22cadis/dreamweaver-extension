@@ -399,6 +399,40 @@
 .cat-negative .dw-negative-tag.active { background-color: #e57373; color: #111827; border-color: #e57373; font-weight: 600; box-shadow: 0 0 10px rgba(229, 115, 115, 0.3); }
 #dreamweaver-modal.show-descriptions .cat-negative .dw-negative-tag.active::after { color: rgba(17, 24, 39, 0.8); }
 
+/* Custom prohibitions: red instead of the custom purple */
+.cat-custom .dw-custom-tag.dw-negative-tag:hover { border-color: #e57373; background-color: rgba(229, 115, 115, 0.15); }
+.cat-custom .dw-custom-tag.dw-negative-tag.active { background-color: #e57373; border-color: #e57373; box-shadow: 0 0 10px rgba(229, 115, 115, 0.3); }
+.dw-custom-kind-icon { font-size: 0.8em; color: #e57373; }
+.dw-custom-tag.dw-negative-tag.active .dw-custom-kind-icon { color: #111827; }
+
+/* Rule / prohibition switch */
+.dw-kind-switch {
+    display: flex;
+    gap: 0;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.dw-kind-btn {
+    flex: 1;
+    background: rgba(20, 20, 25, 0.6);
+    border: none;
+    color: #9CA3AF;
+    padding: 8px;
+    font-size: 0.8em;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: 0.2s;
+    font-family: inherit;
+}
+
+.dw-kind-btn + .dw-kind-btn { border-left: 1px solid rgba(255, 255, 255, 0.15); }
+.dw-kind-btn:hover { color: #E5E7EB; }
+.dw-kind-btn[data-kind="rule"].active { background: #af9ecc; color: #111827; }
+.dw-kind-btn[data-kind="negative"].active { background: #e57373; color: #111827; }
+
 /* Custom Intput Fields */
 .dw-custom-input-group {
     display: flex;

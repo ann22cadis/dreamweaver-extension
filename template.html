@@ -520,6 +520,10 @@
                     <div class="dw-cat-title"><i class="fa-solid fa-pen-nib"></i><h4>Кастом</h4><i class="fa-solid fa-chevron-down dw-chevron"></i></div>
                     <div class="dw-cat-content">
                         <div class="dw-custom-input-group">
+                            <div class="dw-kind-switch" role="radiogroup" aria-label="Вид тега">
+                                <button type="button" class="dw-kind-btn active" data-kind="rule" title="Обычная инструкция: что ИИ должен делать"><i class="fa-solid fa-check"></i> Правило</button>
+                                <button type="button" class="dw-kind-btn" data-kind="negative" title="Запрет: попадёт в блок STRICT PROHIBITIONS"><i class="fa-solid fa-ban"></i> Запрет</button>
+                            </div>
                             <input type="text" id="dw-custom-name" class="dw-input-field" placeholder="Название тега...">
                             <div class="dw-textarea-wrapper">
                                 <textarea id="dw-custom-prompt" class="dw-input-field" placeholder="Текст промпта (правило для ИИ)..."></textarea>
