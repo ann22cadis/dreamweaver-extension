@@ -178,7 +178,89 @@ function getReplyCount(context) {
     return (context.chat || []).filter(m => m && !m.is_user && !m.is_system).length;
 }
 
-function compilePromptString(tagNames, targetChar, { strength = DEFAULT_STRENGTH, includePositive = true } = {}) {
+// ─── Smart prohibitions ──────────────────────────────────────────────────────
+// Prohibitions that can be checked in text. With "smart bans" on, such a tag is sent only when its
+// words actually showed up in the last replies, and then only the words that were found, not the
+// whole list (listing banned words makes the model more likely to use them).
+// Prohibitions about behavior (moralizing, speaking for {{user}}...) can't be detected: always sent.
+// In patterns: "~" = rest of a word (any letters), "_" = whitespace. JS \w and \b don't know Cyrillic.
+const SMART_WINDOW = 6; // how many recent character replies are scanned
+
+const DETECTOR_SOURCES = {
+    'No Russian AI Slop': [
+        // a literal ship's anchor ("бросил якорь", "на якоре") is allowed by the prompt, so skip it here
+        '(?<!(?:брос|подн[яи]|отда|сн[яи]|выбра)~_)(?<!(?:на|с|со)_)якор[ьяеюи]~', 'маяк(?:а|у|ом|е|и|ов|ам|ами|ах)?', 'спасательн~_круг~', 'озон~', 'мускус~', 'сандал(?![иья])~', 'спес[ьиюя]~',
+        'хищн~', 'добыч~', 'зверь_внутри', 'первобытн~', 'собственническ~', 'властн~', 'прорычал~', 'рыкнул~',
+        'мурлык~', 'мурлыч~', '(?:металлическ|медн)~_(?:привкус|послевкус)~', 'стал[ьи]_в_голосе',
+        '(?:густ|тяж[её]л|плотн|наэлектризованн)~_воздух~', 'воздух~_(?:был|стал)~_(?:густ|тяж[её]л|плотн|наэлектризованн)~',
+        'мурашк~', 'пропустил~_удар', 'побелевш~_костяшк~', 'костяшк~_(?:пальцев_)?побелел~',
+        'глаза_потемнел~', 'потемневш~_глаз~', 'маска_(?:треснула|слетела|дала_трещину)',
+        'что-то_(?:внутри_)?(?:оборвал|щ[её]лкнул|сломал|треснул)~', 'мир_сузился', 'время_(?:остановилось|замедлилось|замерло)',
+        'точк~_невозврата', 'последн~_капл~', 'уголо?к~_губ', 'бровь_(?:поползла|приподнялась|изогнулась)',
+        '(?:пробуя|пробовал~|смаковал~)[^.!?\\n]{0,25}на_вкус', 'смаковал~_(?:имя|слово)', 'капитуляц~', 'заяв~_(?:свои_)?права',
+    ],
+    'No GPT-isms': [
+        'shivers?_(?:ran_)?down_(?:my|his|her|their|your)_spine', 'barely_above_a_whisper', 'sparkl~_with_mischief',
+        'ministrations', 'testament_to', 'tapestry', 'little_did_(?:he|she|they|i|we)_know', 'the_air_(?:was_)?thick_with', 'a_dance_of',
+    ],
+    'No English Calques': [
+        'это_имеет_смысл', 'ты_в_порядке', 'вы_в_порядке', 'окей', 'вау', 'детк~', 'сделал~_паузу', 'я_здесь_для_тебя',
+        'дай(?:те)?_мне_знать', 'сделать_разницу', 'о_боже',
+    ],
+    'No Russian Cultural References': [
+        'партизан~', 'декабрист~', 'сусанин~', 'штирлиц~', 'чапаев~', 'крепостничеств~',
+        'крепостн~_(?:крестьян|прав|девк|мужик|душ)~', 'колхоз~', 'субботник~', 'самовар~',
+        'авоськ~', 'рубл(?:ь|я|ей|ю|ём|ем|ями|ях)', 'копе(?:йк|ек)~', 'в[её]рст(?:а|ы|у|ой|е|ами|ах)?', 'аршин~',
+    ],
+};
+
+// Non-word patterns, used as-is.
+const DETECTOR_RAW = {
+    'No Em Dashes': [/—/gu],
+    'No Emojis': [/\p{Extended_Pictographic}/gu],
+    'No Asterisks': [/\*[^*\n]{1,200}\*/gu],
+};
+
+const DETECTORS = (() => {
+    const out = {};
+    for (const [tag, list] of Object.entries(DETECTOR_SOURCES)) {
+        out[tag] = list.map(src => new RegExp(
+            '(?<!\\p{L})(?:' + src.replace(/~/g, '\\p{L}*').replace(/_/g, '\\s+') + ')(?!\\p{L})', 'giu'));
+    }
+    return Object.assign(out, DETECTOR_RAW);
+})();
+
+function isSmartBansOn() {
+    return $('#dw-smart-bans').is(':checked');
+}
+
+function getRecentReplies(context) {
+    return (context?.chat || []).filter(m => m && !m.is_user && !m.is_system && m.mes).slice(-SMART_WINDOW).map(m => m.mes);
+}
+
+// Words/phrases of a detectable prohibition found in recent replies (unique, at most 8).
+function detectViolations(tag, texts) {
+    const found = new Set();
+    for (const re of DETECTORS[tag] || []) {
+        for (const text of texts) {
+            re.lastIndex = 0;
+            let m;
+            while ((m = re.exec(text)) && found.size < 8) {
+                found.add(m[0].replace(/\s+/g, ' ').trim().toLowerCase().slice(0, 40));
+                if (re.lastIndex === m.index) re.lastIndex++;
+            }
+        }
+    }
+    return [...found];
+}
+
+function targetedProhibition(tag, words) {
+    const label = (promptsData[tag]?.match(/^Prohibited: '([^']+)'/) || [])[1] || tag;
+    return `- Prohibited: '${label}'. In recent replies you used: ${words.map(w => `«${w}»`).join(', ')}. ` +
+        'Never use these again, in any form, and do not swap them for synonyms of the same cliché; describe the moment plainly and specifically instead.';
+}
+
+function compilePromptString(tagNames, targetChar, { strength = DEFAULT_STRENGTH, includePositive = true, recentTexts = null } = {}) {
     const level = STRENGTH_LEVELS[strength] || STRENGTH_LEVELS[DEFAULT_STRENGTH];
     const categorized = Object.fromEntries(TAG_TYPES.map(([, sum]) => [sum, []]));
 
@@ -189,6 +271,12 @@ function compilePromptString(tagNames, targetChar, { strength = DEFAULT_STRENGTH
         }
         if (promptsData[t]) {
             const typeClass = getTagType(findTagEl(t)) || 'sum-genre';
+            // Smart bans: a detectable prohibition is sent only for words actually seen recently.
+            if (typeClass === 'sum-negative' && recentTexts && DETECTORS[t]) {
+                const words = detectViolations(t, recentTexts);
+                if (words.length) categorized[typeClass].push(targetedProhibition(t, words));
+                return;
+            }
             categorized[typeClass].push(`- ${promptsData[t]}`);
         }
     });
@@ -261,7 +349,8 @@ function sendPromptToCore() {
         const every = STRENGTH_LEVELS[strength].every;
         // On low strength the rules ride along only every N-th reply (prohibitions always do).
         const includePositive = every <= 1 || getReplyCount(context) % every === 0;
-        const instructions = compilePromptString(activeTags, speakerName, { strength, includePositive });
+        const recentTexts = isSmartBansOn() ? getRecentReplies(context) : null;
+        const instructions = compilePromptString(activeTags, speakerName, { strength, includePositive, recentTexts });
         if (!instructions) {
             context.setExtensionPrompt(extensionName, '', extension_prompt_types.IN_CHAT, 0);
             console.log('[DW] Prompt empty - cleared');
@@ -296,6 +385,7 @@ function saveState() {
         allData.__customNeg = [...customNegative].filter(n => n in customPromptsData);
         allData.__depth = document.getElementById('dw-depth-input')?.value || '0';
         allData.__strength = getStrength();
+        allData.__smartBans = isSmartBansOn();
         lsSave(allData);
         setChatData(chatData);
         updateSummaryUI();
@@ -328,6 +418,7 @@ function loadState() {
         // Existing users have no saved strength: keep the old wording (level 3) and don't touch their depth.
         $('#dw-strength-input').val(STRENGTH_LEVELS[allData.__strength] ? allData.__strength : DEFAULT_STRENGTH);
         updateStrengthLabel();
+        $('#dw-smart-bans').prop('checked', !!allData.__smartBans);
         if (chatId) migrateLegacyChatData(chatId);
         renderCustomTags();
         if (!chatId) {
@@ -424,11 +515,22 @@ function updateSummaryUI() {
     }
 
     const summaryContainer = $('#dw-selected-tags');
+    let recentTexts = null;
+    if (isSmartBansOn()) {
+        try { recentTexts = getRecentReplies(getContext()); } catch { recentTexts = null; }
+    }
     if (selectedUI.length > 0) {
         summaryContainer.empty();
         selectedUI.forEach(tag => {
             const el = $(`<span class="dw-summary-tag ${tag.type}"></span>`).text(tag.text).attr('data-tag', tag.tag ?? tag.text);
             if (tag.inherited) el.attr('title', 'Глобальный тег — снимается в режиме «Глобально»');
+            // Smart bans: show whether a detectable prohibition is currently sent or waiting.
+            const name = tag.tag ?? tag.text;
+            if (recentTexts && DETECTORS[name] && el.hasClass('sum-negative') && !customPromptsData[name]) {
+                const words = detectViolations(name, recentTexts);
+                if (words.length) el.attr('title', `Замечено в последних ответах: ${words.join(', ')}. Запрет отправляется.`);
+                else el.addClass('sum-sleeping').attr('title', `Ждёт: в последних ${SMART_WINDOW} ответах не встречалось, поэтому не отправляется.`);
+            }
             summaryContainer.append(el);
         });
     } else { summaryContainer.text('Ничего не выбрано'); }
@@ -580,6 +682,7 @@ async function init() {
     $(document).on('click', '.dw-kind-btn', function() { setCustomKind($(this).attr('data-kind')); });
     $(document).on('input', '#dw-depth-input', saveState);
     // Moving the slider also sets the level's depth; the depth field can still be adjusted afterwards.
+    $(document).on('change', '#dw-smart-bans', saveState);
     $(document).on('input', '#dw-strength-input', () => {
         $('#dw-depth-input').val(STRENGTH_LEVELS[getStrength()].depth);
         updateStrengthLabel();

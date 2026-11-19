@@ -638,6 +638,31 @@
     color: #6B7280;
 }
 
+.dw-smart-bans-label {
+    flex-basis: 100%;
+    display: flex !important;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75em !important;
+    text-transform: none !important;
+    letter-spacing: 0 !important;
+    color: #9CA3AF;
+    cursor: pointer;
+    user-select: none;
+}
+
+#dw-smart-bans {
+    margin: 0;
+    accent-color: #e57373;
+    cursor: pointer;
+}
+
+/* Smart bans: prohibition not sent right now (nothing found in recent replies) */
+.dw-summary-tag.sum-negative.sum-sleeping {
+    opacity: 0.45;
+    border: 1px dashed rgba(229, 115, 115, 0.8);
+}
+
 /* Selected Tags Summary Area */
 #dw-selected-tags {
     display: flex;
