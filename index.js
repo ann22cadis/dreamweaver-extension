@@ -135,7 +135,51 @@ function findTagEl(name) {
     return $('.dw-tag').filter(function () { return getTagName(this) === name; }).first();
 }
 
-function compilePromptString(tagNames, targetChar) {
+// Prompt strength levels (slider 1–4). Each level sets the wording, how often the rules are sent,
+// and the depth the slider puts into the "Глубина" field (the user can still change it by hand).
+// Prohibitions are sent on every reply at every level: skipping them lets banned words back in.
+const STRENGTH_LEVELS = {
+    1: {
+        name: 'Фон', hint: 'мягко, правила раз в 3 ответа, запреты всегда', depth: 6, every: 3,
+        positive: 'Let the following themes and instructions gently shape the roleplay in the background. Apply them subtly and only where they fit naturally; never showcase them or repeat the same devices from reply to reply:',
+        negative: 'Avoid the following:',
+    },
+    2: {
+        name: 'Обычно', hint: 'естественно, без выпячивания', depth: 4, every: 1,
+        positive: 'This roleplay is characterized by the following instructions and themes. Follow them naturally, without calling attention to them or repeating the same devices in every reply:',
+        negative: 'Do not do or write any of the following:',
+    },
+    3: {
+        name: 'Сильно', hint: 'строго, каждый ответ', depth: 2, every: 1,
+        positive: 'This roleplay must strictly be characterized by the following instructions and themes:',
+        negative: 'STRICT PROHIBITIONS. Never do or write any of the following, under any circumstances:',
+    },
+    4: {
+        name: 'Жёстко', hint: 'максимально, у самого конца чата', depth: 0, every: 1,
+        positive: 'MANDATORY RULES. You MUST follow every instruction below in every reply, without exception:',
+        negative: 'ABSOLUTE PROHIBITIONS. NEVER do or write any of the following under ANY circumstances; violating them is unacceptable:',
+    },
+};
+const DEFAULT_STRENGTH = 3; // matches the wording used before the slider existed
+
+function getStrength() {
+    const v = parseInt($('#dw-strength-input').val(), 10);
+    return STRENGTH_LEVELS[v] ? v : DEFAULT_STRENGTH;
+}
+
+function updateStrengthLabel() {
+    const lvl = STRENGTH_LEVELS[getStrength()];
+    $('#dw-strength-name').text(lvl.name);
+    $('#dw-strength-hint').text(lvl.hint);
+}
+
+// Count of character replies so far; used to send the rules only every N-th reply on low strength.
+function getReplyCount(context) {
+    return (context.chat || []).filter(m => m && !m.is_user && !m.is_system).length;
+}
+
+function compilePromptString(tagNames, targetChar, { strength = DEFAULT_STRENGTH, includePositive = true } = {}) {
+    const level = STRENGTH_LEVELS[strength] || STRENGTH_LEVELS[DEFAULT_STRENGTH];
     const categorized = Object.fromEntries(TAG_TYPES.map(([, sum]) => [sum, []]));
 
     tagNames.forEach(t => {
@@ -151,24 +195,26 @@ function compilePromptString(tagNames, targetChar) {
 
     // Positive instructions first, prohibitions in their own block so the model reads them as hard limits.
     let fullString = '';
-    TAG_TYPES.forEach(([, cat]) => {
-        if (cat !== 'sum-negative' && categorized[cat].length > 0) fullString += categorized[cat].join('\n') + '\n';
-    });
+    if (includePositive) {
+        TAG_TYPES.forEach(([, cat]) => {
+            if (cat !== 'sum-negative' && categorized[cat].length > 0) fullString += categorized[cat].join('\n') + '\n';
+        });
+    }
     const negatives = categorized['sum-negative'];
 
     if (fullString.trim().length === 0 && negatives.length === 0) return "";
 
     let intro = '';
     if (targetChar && targetChar !== 'all') {
-        intro = `These strict instructions and behavioral guidelines apply exclusively to the character ${targetChar}:\n`;
+        intro = `These instructions and behavioral guidelines apply exclusively to the character ${targetChar}:\n`;
     }
     let body = '';
     if (fullString.trim()) {
-        body += `This roleplay must strictly be characterized by the following instructions and themes:\n${fullString.trim()}\n`;
+        body += `${level.positive}\n${fullString.trim()}\n`;
     }
     if (negatives.length) {
         if (body) body += '\n';
-        body += `STRICT PROHIBITIONS. Never do or write any of the following, under any circumstances:\n${negatives.join('\n')}\n`;
+        body += `${level.negative}\n${negatives.join('\n')}\n`;
     }
     return `<dreamweaver>\n${intro}${body.trim()}\n</dreamweaver>`;
 }
@@ -211,7 +257,11 @@ function sendPromptToCore() {
             return;
         }
 
-        const instructions = compilePromptString(activeTags, speakerName);
+        const strength = getStrength();
+        const every = STRENGTH_LEVELS[strength].every;
+        // On low strength the rules ride along only every N-th reply (prohibitions always do).
+        const includePositive = every <= 1 || getReplyCount(context) % every === 0;
+        const instructions = compilePromptString(activeTags, speakerName, { strength, includePositive });
         if (!instructions) {
             context.setExtensionPrompt(extensionName, '', extension_prompt_types.IN_CHAT, 0);
             console.log('[DW] Prompt empty - cleared');
@@ -219,7 +269,7 @@ function sendPromptToCore() {
         }
 
         context.setExtensionPrompt(extensionName, instructions, extension_prompt_types.IN_CHAT, depthValue);
-        console.log('[DW] ✅ SUCCESS: Prompt injected at depth', depthValue);
+        console.log('[DW] ✅ SUCCESS: Prompt injected at depth', depthValue, 'strength', strength, includePositive ? '' : '(prohibitions only this turn)');
     } catch (e) {
         console.error("[DW] sendPromptToCore Error:", e);
     }
@@ -245,6 +295,7 @@ function saveState() {
         allData.__custom = customPromptsData;
         allData.__customNeg = [...customNegative].filter(n => n in customPromptsData);
         allData.__depth = document.getElementById('dw-depth-input')?.value || '0';
+        allData.__strength = getStrength();
         lsSave(allData);
         setChatData(chatData);
         updateSummaryUI();
@@ -274,6 +325,9 @@ function loadState() {
         }
         const depthInput = document.getElementById('dw-depth-input');
         if (depthInput && allData.__depth !== undefined) depthInput.value = allData.__depth;
+        // Existing users have no saved strength: keep the old wording (level 3) and don't touch their depth.
+        $('#dw-strength-input').val(STRENGTH_LEVELS[allData.__strength] ? allData.__strength : DEFAULT_STRENGTH);
+        updateStrengthLabel();
         if (chatId) migrateLegacyChatData(chatId);
         renderCustomTags();
         if (!chatId) {
@@ -525,6 +579,12 @@ async function init() {
     $(document).on('click', '.dw-custom-edit', function(e) { e.stopPropagation(); const tagEl = $(this).closest('.dw-tag'); const n = tagEl.find('.dw-custom-tag-name').text().trim(); const isActive = tagEl.hasClass('active'); $('#dw-custom-name').val(n).data('editing', n).data('was-active', isActive); $('#dw-custom-prompt').val(customPromptsData[n]); setCustomKind(customNegative.has(n) ? 'negative' : 'rule'); $('#dw-custom-add').text('Сохранить'); });
     $(document).on('click', '.dw-kind-btn', function() { setCustomKind($(this).attr('data-kind')); });
     $(document).on('input', '#dw-depth-input', saveState);
+    // Moving the slider also sets the level's depth; the depth field can still be adjusted afterwards.
+    $(document).on('input', '#dw-strength-input', () => {
+        $('#dw-depth-input').val(STRENGTH_LEVELS[getStrength()].depth);
+        updateStrengthLabel();
+        saveState();
+    });
     $(document).on('click', '#dw-info-toggle', function() { $('#dreamweaver-modal').toggleClass('show-descriptions'); $(this).toggleClass('active'); });
     $(document).on('click', '#dw-custom-prompt-expand', function() {
         const wrapper = $(this).closest('.dw-textarea-wrapper');

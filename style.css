@@ -598,6 +598,46 @@
     text-align: center;
 }
 
+/* Prompt strength slider */
+.dw-strength-container {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px 10px;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.dw-strength-container label {
+    font-size: 0.75em;
+    font-weight: 500;
+    color: #9CA3AF;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+#dw-strength-input {
+    flex: 1;
+    min-width: 120px;
+    accent-color: #63BABD;
+    cursor: pointer;
+    margin: 0;
+}
+
+#dw-strength-name {
+    font-size: 0.85em;
+    font-weight: 600;
+    color: #E5E7EB;
+    min-width: 60px;
+}
+
+#dw-strength-hint {
+    flex-basis: 100%;
+    font-size: 0.75em;
+    color: #6B7280;
+}
+
 /* Selected Tags Summary Area */
 #dw-selected-tags {
     display: flex;
