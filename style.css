@@ -239,6 +239,7 @@
 .cat-au .dw-cat-title i:first-child { color: #818cf8; }
 .cat-world .dw-cat-title i:first-child { color: #fb923c; }
 .cat-negative .dw-cat-title i:first-child { color: #e57373; }
+.cat-favorites .dw-cat-title i:first-child { color: #f5c542; }
 
 .dw-cat-title h4 {
     margin: 0;
@@ -398,6 +399,55 @@
 .cat-negative .dw-negative-tag:hover { border-color: #e57373; color: #ffffff; background-color: rgba(229, 115, 115, 0.15); }
 .cat-negative .dw-negative-tag.active { background-color: #e57373; color: #111827; border-color: #e57373; font-weight: 600; box-shadow: 0 0 10px rgba(229, 115, 115, 0.3); }
 #dreamweaver-modal.show-descriptions .cat-negative .dw-negative-tag.active::after { color: rgba(17, 24, 39, 0.8); }
+
+/* Favorites: star on every tag + shortcut chips in the "Избранное" section */
+.dw-fav-toggle {
+    margin-left: 6px;
+    font-size: 0.8em;
+    color: #9CA3AF;
+    opacity: 0;
+    cursor: pointer;
+    transition: opacity 0.15s, color 0.15s, transform 0.15s;
+}
+.dw-tag:hover .dw-fav-toggle { opacity: 0.6; }
+.dw-fav-toggle:hover { opacity: 1 !important; color: #f5c542; transform: scale(1.15); }
+.dw-fav-toggle.on { opacity: 1; color: #f5c542; }
+.dw-tag.active .dw-fav-toggle:not(.on) { color: #111827; }
+.dw-custom-actions .dw-fav-toggle { margin-left: 0; opacity: 1; height: 24px; width: 24px; display: inline-flex; align-items: center; justify-content: center; }
+/* touch screens have no hover: keep the star faintly visible */
+@media (hover: none) { .dw-fav-toggle { opacity: 0.35; } }
+/* in description mode the tag is a column; keep the star in the corner */
+#dreamweaver-modal.show-descriptions .dw-tag:not(.dw-custom-item) { position: relative; padding-right: 30px; }
+#dreamweaver-modal.show-descriptions .dw-tag:not(.dw-custom-item) > .dw-fav-toggle { position: absolute; top: 10px; right: 10px; margin: 0; }
+
+#dw-fav-empty {
+    font-size: 0.8em;
+    color: #6B7280;
+    padding: 4px 2px 2px;
+}
+#dw-fav-empty .fa-star { color: #f5c542; }
+
+.dw-fav-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px 8px 14px;
+    margin: 0 6px 8px 0;
+    background-color: rgba(45, 45, 50, 0.8);
+    border: 1px solid rgba(245, 197, 66, 0.35);
+    border-radius: 8px;
+    cursor: pointer;
+    user-select: none;
+    font-size: 0.85em;
+    font-weight: 500;
+    color: #D1D5DB;
+    transition: all 0.2s ease;
+}
+.dw-fav-item:hover { border-color: #f5c542; color: #ffffff; }
+.dw-fav-item.active { font-weight: 600; border-color: transparent; }
+.dw-fav-item:active { transform: scale(0.96); }
+.dw-fav-remove { font-size: 0.85em; opacity: 0.4; transition: opacity 0.15s; }
+.dw-fav-remove:hover { opacity: 1; }
 
 /* Custom prohibitions: red instead of the custom purple */
 .cat-custom .dw-custom-tag.dw-negative-tag:hover { border-color: #e57373; background-color: rgba(229, 115, 115, 0.15); }

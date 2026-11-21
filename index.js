@@ -10,6 +10,7 @@ const LS_KEY = 'dw_v2_data';
 let promptsData = {};
 let customPromptsData = {};
 let customNegative = new Set(); // names of custom tags that are prohibitions rather than rules
+let favoriteTags = []; // tag names pinned to the "Избранное" section, in the order they were added
 let currentTargetChar = 'all';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -394,6 +395,7 @@ function saveState() {
         allData.__depth = document.getElementById('dw-depth-input')?.value || '0';
         allData.__strength = getStrength();
         allData.__smartBans = isSmartBansOn();
+        allData.__favorites = favoriteTags;
         lsSave(allData);
         setChatData(chatData);
         updateSummaryUI();
@@ -427,6 +429,7 @@ function loadState() {
         $('#dw-strength-input').val(STRENGTH_LEVELS[allData.__strength] ? allData.__strength : DEFAULT_STRENGTH);
         updateStrengthLabel();
         $('#dw-smart-bans').prop('checked', !!allData.__smartBans);
+        favoriteTags = Array.isArray(allData.__favorites) ? allData.__favorites.filter(n => typeof n === 'string') : [];
         if (chatId) migrateLegacyChatData(chatId);
         renderCustomTags();
         if (!chatId) {
@@ -480,7 +483,7 @@ function renderCustomTags() {
 
 function buildCustomTagEl(name) {
     const neg = customNegative.has(name);
-    return $(`<div class="dw-tag dw-custom-tag dw-custom-item${neg ? ' dw-negative-tag' : ''}"${neg ? ' title="Запрет"' : ''}>${neg ? '<i class="fa-solid fa-ban dw-custom-kind-icon"></i>' : ''}<span class="dw-custom-tag-name">${escapeHtml(name)}</span><span class="dw-custom-actions"><i class="fa-solid fa-pen dw-custom-edit"></i><i class="fa-solid fa-trash dw-custom-delete"></i></span></div>`);
+    return $(`<div class="dw-tag dw-custom-tag dw-custom-item${neg ? ' dw-negative-tag' : ''}"${neg ? ' title="Запрет"' : ''}>${neg ? '<i class="fa-solid fa-ban dw-custom-kind-icon"></i>' : ''}<span class="dw-custom-tag-name">${escapeHtml(name)}</span><span class="dw-custom-actions"><i class="fa-solid fa-star dw-fav-toggle" title="В избранное"></i><i class="fa-solid fa-pen dw-custom-edit"></i><i class="fa-solid fa-trash dw-custom-delete"></i></span></div>`);
 }
 
 // Kind switch in the custom tag form: 'rule' (regular instruction) or 'negative' (prohibition).
@@ -542,6 +545,56 @@ function updateSummaryUI() {
             summaryContainer.append(el);
         });
     } else { summaryContainer.text('Ничего не выбрано'); }
+    renderFavorites();
+}
+
+// ─── Favorites ───────────────────────────────────────────────────────────────
+// Favorites are shortcuts, not copies: they have no .dw-tag class (so they never count as selected
+// tags themselves) and clicking one toggles the original tag in its category.
+
+// Put a star on every preset tag (custom tags get theirs in buildCustomTagEl).
+function addFavoriteStars() {
+    $('.dw-tag:not(.dw-custom-item)').each(function () {
+        if (!$(this).children('.dw-fav-toggle').length) {
+            $(this).append('<i class="fa-solid fa-star dw-fav-toggle" title="В избранное"></i>');
+        }
+    });
+}
+
+function renderFavorites() {
+    const container = $('#dw-fav-container');
+    if (!container.length) return;
+    container.empty();
+    const existing = favoriteTags.filter(n => findTagEl(n).length);
+    existing.forEach(name => {
+        const orig = findTagEl(name);
+        const active = orig.hasClass('active');
+        const el = $('<span class="dw-fav-item"></span>')
+            .attr('data-tag', name)
+            .attr('title', orig.attr('data-desc') || customPromptsData[name] || '')
+            .text(name)
+            .toggleClass('active', active);
+        if (active) el.addClass(getTagType(orig));
+        el.append('<i class="fa-solid fa-xmark dw-fav-remove" title="Убрать из избранного"></i>');
+        container.append(el);
+    });
+    $('#dw-fav-empty').toggle(existing.length === 0);
+    $('.dw-fav-toggle').each(function () {
+        $(this).toggleClass('on', favoriteTags.includes(getTagName($(this).closest('.dw-tag'))))
+            .attr('title', $(this).hasClass('on') ? 'Убрать из избранного' : 'В избранное');
+    });
+}
+
+function toggleFavorite(name, on) {
+    if (!name) return;
+    const has = favoriteTags.includes(name);
+    if (on === undefined) on = !has;
+    if (on && !has) favoriteTags.push(name);
+    if (!on && has) favoriteTags = favoriteTags.filter(n => n !== name);
+    const allData = lsLoad();
+    allData.__favorites = favoriteTags;
+    lsSave(allData);
+    renderFavorites();
 }
 
 function populateCharacterDropdown() {
@@ -603,6 +656,7 @@ async function init() {
     console.log('[DW] init() START');
     await loadPrompts();
     await loadHTML();
+    addFavoriteStars();
     setInterval(createUI, 1000);
     loadState();
     populateCharacterDropdown();
@@ -674,6 +728,21 @@ async function init() {
     });
     $(document).on('click', (e) => { if (!$(e.target).closest('#dw-char-selector').length) closeCharList(); });
     $(document).on('click', '#dw-power-toggle', function() { $(this).toggleClass('active'); saveState(); });
+    // Favorites: the star must not also toggle the tag it sits on.
+    $(document).on('click', '.dw-fav-toggle', function(e) {
+        e.stopPropagation();
+        toggleFavorite(getTagName($(this).closest('.dw-tag')));
+    });
+    $(document).on('click', '.dw-fav-remove', function(e) {
+        e.stopPropagation();
+        toggleFavorite($(this).closest('.dw-fav-item').attr('data-tag'), false);
+    });
+    $(document).on('click', '.dw-fav-item', function() {
+        const orig = findTagEl($(this).attr('data-tag'));
+        if (!orig.length) return;
+        if (orig.hasClass('dw-custom-item')) orig.find('.dw-custom-tag-name').trigger('click');
+        else orig.trigger('click');
+    });
     $(document).on('click', '.dw-tag:not(.dw-custom-item)', function() { $(this).toggleClass('active'); saveState(); });
     $(document).on('click', '.dw-custom-tag-name', function(e) { e.stopPropagation(); $(this).closest('.dw-tag').toggleClass('active'); saveState(); });
     $(document).on('click', '.dw-custom-delete', function(e) { 
@@ -682,6 +751,7 @@ async function init() {
         if (confirm(`Вы уверены, что хотите удалить тег "${n}"?`)) {
             delete customPromptsData[n];
             customNegative.delete(n);
+            favoriteTags = favoriteTags.filter(f => f !== n);
             $(this).closest('.dw-tag').remove();
             saveState(); 
         }
@@ -732,6 +802,8 @@ async function init() {
             if (editing && editing !== n && customPromptsData[editing]) {
                 delete customPromptsData[editing];
                 customNegative.delete(editing);
+                // keep a renamed custom tag in favorites, in the same position
+                favoriteTags = favoriteTags.map(f => (f === editing ? n : f)).filter((f, i, a) => a.indexOf(f) === i);
                 $('.dw-custom-tag').filter(function() { return getTagName(this) === editing; }).remove();
             }
             if (customPromptsData[n]) {
