@@ -199,6 +199,13 @@ const DETECTOR_SOURCES = {
         'точк~_невозврата', 'последн~_капл~', 'уголо?к~_губ', 'бровь_(?:поползла|приподнялась|изогнулась)',
         '(?:пробуя|пробовал~|смаковал~)[^.!?\\n]{0,25}на_вкус', 'смаковал~_(?:имя|слово)', 'капитуляц~', 'заяв~_(?:свои_)?права',
     ],
+    'No Clinical Metaphors': [
+        'скальпел~', 'хирургическ~_точност~', 'с_хирургическ~', 'хирургически', 'как_(?:у_)?хирург~', 'препарир~',
+        'как_рентген~', 'стерильн~', 'сканир~', 'проанализир~', 'анализир~', 'зарегистрир~',
+        'зафиксирова[лв]~_(?:взгляд|взглядом|каждую|каждый|кажд~|реакци|детал)~', 'считывал~_(?:реакци|эмоци|сигнал)~',
+        'сбор~_данных', 'сбо[йяе]~_систем~', 'перезагруз~', 'систем~_координат', 'мозг_отключился',
+        'алгоритм~', 'холодн~_расч[её]т~', 'математическ~_точност~', 'выверенн~_движени~', 'калибров~', 'механически', 'на_автомате',
+    ],
     'No GPT-isms': [
         'shivers?_(?:ran_)?down_(?:my|his|her|their|your)_spine', 'barely_above_a_whisper', 'sparkl~_with_mischief',
         'ministrations', 'testament_to', 'tapestry', 'little_did_(?:he|she|they|i|we)_know', 'the_air_(?:was_)?thick_with', 'a_dance_of',
@@ -217,7 +224,8 @@ const DETECTOR_SOURCES = {
 // Non-word patterns, used as-is.
 const DETECTOR_RAW = {
     'No Em Dashes': [/—/gu],
-    'No Emojis': [/\p{Extended_Pictographic}/gu],
+    // Text symbols that Unicode also marks as pictographic are not emojis: ♡ ♥ (used by Hentai Dialogue), © ® ™ ‼ ⁉
+    'No Emojis': [/(?![♡♥©®™‼⁉](?!️))\p{Extended_Pictographic}️?/gu],
     'No Asterisks': [/\*[^*\n]{1,200}\*/gu],
 };
 
